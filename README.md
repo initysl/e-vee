@@ -1,6 +1,8 @@
+# E-VEE — Customer Support Chatbot
 
-# E-VEE - Customer Support Chatbot
+> **E-VEE** is a smart assistant designed to streamline the shopping experience by delivering instant information, performing product lookups, providing real-time cart updates, and enabling direct checkout actions.
 
-> E-VEE assistant is designed to streamline the shopping experience by providing instant information, product lookups using, real-time cart status updates, and facilitating direct checkout functionality.
-
-> RAG Engine + LLM + API
+### Technology Stack
+- **RAG Engine**
+- **LLM**
+- **API Integrations**
