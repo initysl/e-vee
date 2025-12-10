@@ -15,7 +15,6 @@ _products_cache: List[Dict[str, Any]] = []
 async def _fetch_from_api() -> List[Dict[str, Any]]:
     """
     Internal function to fetch product data from the Fake Store API.
-    
     Returns:
         List[Dict[str, Any]]: List of product dictionaries, or empty list on error.
     """
@@ -45,10 +44,8 @@ async def _fetch_from_api() -> List[Dict[str, Any]]:
 async def get_products(force_refresh: bool = False) -> List[Dict[str, Any]]:
     """
     Get product data. Fetches from API only once on first call, then returns cached data.
-    
     Args:
         force_refresh: If True, bypass cache and fetch fresh data.
-    
     Returns:
         List[Dict[str, Any]]: List of product dictionaries from cache or API.
     """

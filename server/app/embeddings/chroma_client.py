@@ -1,0 +1,99 @@
+import chromadb
+from chromadb.config import Settings
+
+# Global client instance
+_chroma_client = None
+_collection = None
+
+COLLECTION_NAME = "shophub_products"
+PERSIST_DIRECTORY = "./chroma_db"
+
+def initialize_chroma():
+    """ Initialize ChromaDB client with  persistent storage 
+    """
+    global _chroma_client 
+
+    if _chroma_client is None:
+        _chroma_client = chromadb.PersistentClient(
+            path = PERSIST_DIRECTORY,
+            settings=Settings(
+                anonymized_telemetry=False,
+                aloow_reset=True
+            )
+        )
+        print(f"ChromaDB initialized at {PERSIST_DIRECTORY}")
+    return _chroma_client
+
+def get_chroma_client():
+    """
+    Get or create the ChromaDB collection for products and platform info.
+    Returns:
+        Collection: ChromaDB collection instance
+    """
+    global _collection
+
+    if _collection is None:
+        client = initialize_chroma()
+        # Create or get existing collection
+        try:
+            _collection = client.get_or_create_collection(
+                name=COLLECTION_NAME,
+                metadata={"description": "ShopHub product embeddings and information"}
+            )
+            print(f"Collection '{COLLECTION_NAME}' ready.")
+        except Exception as e:
+            print(f"Error creating/getting collection '{COLLECTION_NAME}': {e}")
+            raise e
+    
+    return _collection
+
+
+def search_similar(query_embedding: list, n_results: int = 5, filter_dict: dict | None = None):
+    """
+    Search for similar items in ChromaDB using embedding.
+    Args:
+        query_embedding: Query vector embedding
+        n_results: Number of results to return
+        filter_dict: Optional metadata filter (e.g., {'type': 'product'})
+    Returns:
+        dict: Search results with documents, metadatas, and distances
+    """
+    collection = get_chroma_client()
+    
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=n_results,
+        where=filter_dict if filter_dict else None
+    )
+    
+    return results
+
+
+def reset_collection():
+    """
+    Delete and recreate the collection (useful for testing).
+    """
+    global _collection
+    
+    client = initialize_chroma()
+    
+    try:
+        client.delete_collection(name=COLLECTION_NAME)
+        print(f"Collection '{COLLECTION_NAME}' deleted")
+    except Exception as e:
+        print(f"Collection doesn't exist or error: {e}")
+    
+    _collection = None
+    get_chroma_client()
+    print("Collection recreated")
+
+
+def get_collection_count():
+    """
+    Get the number of items in the collection.
+    
+    Returns:
+        int: Number of items stored
+    """
+    collection = get_chroma_client()
+    return collection.count()

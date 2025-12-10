@@ -25,6 +25,7 @@ server/*.log
 server/.DS_Store
 server/chroma_data/
 server/.chromadb/
+server/s.txt/
 
 # Database
 *.db

@@ -1,109 +1,104 @@
-from huggingface_hub import InferenceClient
-from typing import List, Dict, Any
+import chromadb
+from chromadb.config import Settings
 import os
-from app.services.product_service import get_products
-from app.embeddings.chroma_client import get_chroma_client
 
-# Initialize HuggingFace client
-client = InferenceClient(token=os.getenv("HUGGINGFACE_API_KEY"))
+# Global client instance
+_chroma_client = None
+_collection = None
 
-
-def create_embeddings(texts: List[str]) -> List[List[float]]:
-    """Generate embeddings using HuggingFace Inference API"""
-    embeddings = []
-    
-    for text in texts:
-        response = client.feature_extraction(
-            text=text,
-            model="sentence-transformers/all-MiniLM-L6-v2"
-        )
-        embeddings.append(response)
-    
-    return embeddings
+COLLECTION_NAME = "ecommerce_products"
+PERSIST_DIRECTORY = "./chroma_db"
 
 
-def create_product_document(product: Dict[str, Any]) -> str:
+def initialize_chroma():
     """
-    Convert product data into a text document for embedding.
+    Initialize ChromaDB client with persistent storage.
+    """
+    global _chroma_client
     
-    Args:
-        product: Product dictionary from API
+    if _chroma_client is None:
+        _chroma_client = chromadb.PersistentClient(
+            path=PERSIST_DIRECTORY,
+            settings=Settings(
+                anonymized_telemetry=False,
+                allow_reset=True
+            )
+        )
+        print(f"ChromaDB initialized at {PERSIST_DIRECTORY}")
+    
+    return _chroma_client
+
+
+def get_chroma_client():
+    """
+    Get or create the ChromaDB collection for products and platform info.
     
     Returns:
-        str: Formatted text combining product fields
+        Collection: ChromaDB collection instance
     """
-    title = product.get('title', '')
-    description = product.get('description', '')
-    category = product.get('category', '')
-    price = product.get('price', '')
+    global _collection
     
-    # Combine fields into searchable text
-    document = f"Product: {title}. Category: {category}. Description: {description}. Price: ${price}"
-    return document
+    if _collection is None:
+        client = initialize_chroma()
+        
+        # Create or get existing collection
+        _collection = client.get_or_create_collection(
+            name=COLLECTION_NAME,
+            metadata={"description": "E-commerce products and platform information"}
+        )
+        print(f"Collection '{COLLECTION_NAME}' ready")
+    
+    return _collection
 
 
-async def embed_and_store_products():
+def search_similar(query_embedding: list, n_results: int = 5, filter_dict: dict = None):
     """
-    Fetch products from Step 1, create embeddings, and store in ChromaDB.
+    Search for similar items in ChromaDB using embedding.
+    
+    Args:
+        query_embedding: Query vector embedding
+        n_results: Number of results to return
+        filter_dict: Optional metadata filter (e.g., {'type': 'product'})
+    
+    Returns:
+        dict: Search results with documents, metadatas, and distances
     """
-    # Step 1: Get products from product_service
-    products = await get_products()
-    
-    if not products:
-        print("No products to embed")
-        return
-    
-    # Get ChromaDB collection
     collection = get_chroma_client()
     
-    documents = []
-    metadatas = []
-    ids = []
-    
-    # Step 2: Process each product into text documents
-    for product in products:
-        product_id = str(product.get('id'))
-        
-        # Create text document from product data
-        doc_text = create_product_document(product)
-        documents.append(doc_text)
-        
-        # Store metadata for retrieval
-        metadatas.append({
-            'product_id': product_id,
-            'title': product.get('title', ''),
-            'price': str(product.get('price', '')),
-            'category': product.get('category', ''),
-            'image': product.get('image', ''),
-            'description': product.get('description', '')
-        })
-        
-        ids.append(f"product_{product_id}")
-    
-    # Generate embeddings using HuggingFace API
-    print(f"Generating embeddings for {len(documents)} products...")
-    embeddings = create_embeddings(documents)
-    
-    # Store in ChromaDB
-    collection.add(
-        embeddings=embeddings,
-        documents=documents,
-        metadatas=metadatas,
-        ids=ids
+    results = collection.query(
+        query_embeddings=[query_embedding],
+        n_results=n_results,
+        where=filter_dict if filter_dict else None
     )
     
-    print(f"Successfully embedded and stored {len(products)} products in ChromaDB")
+    return results
 
 
-async def refresh_embeddings():
+def reset_collection():
     """
-    Force refresh products and recreate embeddings.
+    Delete and recreate the collection (useful for testing).
     """
-    from app.services.product_service import clear_cache
+    global _collection
     
-    # Clear existing cache and fetch fresh
-    clear_cache()
+    client = initialize_chroma()
     
-    # Re-embed and store
-    await embed_and_store_products()
-    print("Embeddings refreshed successfully")
+    try:
+        client.delete_collection(name=COLLECTION_NAME)
+        print(f"Collection '{COLLECTION_NAME}' deleted")
+    except Exception as e:
+        print(f"Collection doesn't exist or error: {e}")
+    
+    _collection = None
+    get_chroma_client()
+    print("Collection recreated")
+
+
+def get_collection_count():
+    """
+    Get the number of items in the collection.
+    
+    Returns:
+        int: Number of items stored
+    """
+    collection = get_chroma_client()
+    return collection.count()
