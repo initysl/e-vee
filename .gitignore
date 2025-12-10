@@ -1,0 +1,49 @@
+# Next.js Client
+client/node_modules/
+client/.next/
+client/out/
+client/build/
+client/.env.local
+client/.env.*.local
+client/.vercel/
+client/npm-debug.log*
+client/yarn-debug.log*
+client/yarn-error.log*
+client/.DS_Store
+client/*.pem
+.env*
+*.tsbuildinfo
+next-env.d.ts
+
+# Python Server
+server/.venv/
+server/.env/
+server/build/
+server/.env
+server/.pytest_cache/
+server/*.log
+server/.DS_Store
+server/chroma_data/
+server/.chromadb/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# OS
+Thumbs.db
+.DS_Store
