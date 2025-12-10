@@ -1,0 +1,109 @@
+from huggingface_hub import InferenceClient
+from typing import List, Dict, Any
+import os
+from app.services.product_service import get_products
+from app.embeddings.chroma_client import get_chroma_client
+
+# Initialize HuggingFace client
+client = InferenceClient(token=os.getenv("HUGGINGFACE_API_KEY"))
+
+
+def create_embeddings(texts: List[str]) -> List[List[float]]:
+    """Generate embeddings using HuggingFace Inference API"""
+    embeddings = []
+    
+    for text in texts:
+        response = client.feature_extraction(
+            text=text,
+            model="sentence-transformers/all-MiniLM-L6-v2"
+        )
+        embeddings.append(response)
+    
+    return embeddings
+
+
+def create_product_document(product: Dict[str, Any]) -> str:
+    """
+    Convert product data into a text document for embedding.
+    
+    Args:
+        product: Product dictionary from API
+    
+    Returns:
+        str: Formatted text combining product fields
+    """
+    title = product.get('title', '')
+    description = product.get('description', '')
+    category = product.get('category', '')
+    price = product.get('price', '')
+    
+    # Combine fields into searchable text
+    document = f"Product: {title}. Category: {category}. Description: {description}. Price: ${price}"
+    return document
+
+
+async def embed_and_store_products():
+    """
+    Fetch products from Step 1, create embeddings, and store in ChromaDB.
+    """
+    # Step 1: Get products from product_service
+    products = await get_products()
+    
+    if not products:
+        print("No products to embed")
+        return
+    
+    # Get ChromaDB collection
+    collection = get_chroma_client()
+    
+    documents = []
+    metadatas = []
+    ids = []
+    
+    # Step 2: Process each product into text documents
+    for product in products:
+        product_id = str(product.get('id'))
+        
+        # Create text document from product data
+        doc_text = create_product_document(product)
+        documents.append(doc_text)
+        
+        # Store metadata for retrieval
+        metadatas.append({
+            'product_id': product_id,
+            'title': product.get('title', ''),
+            'price': str(product.get('price', '')),
+            'category': product.get('category', ''),
+            'image': product.get('image', ''),
+            'description': product.get('description', '')
+        })
+        
+        ids.append(f"product_{product_id}")
+    
+    # Generate embeddings using HuggingFace API
+    print(f"Generating embeddings for {len(documents)} products...")
+    embeddings = create_embeddings(documents)
+    
+    # Store in ChromaDB
+    collection.add(
+        embeddings=embeddings,
+        documents=documents,
+        metadatas=metadatas,
+        ids=ids
+    )
+    
+    print(f"Successfully embedded and stored {len(products)} products in ChromaDB")
+
+
+async def refresh_embeddings():
+    """
+    Force refresh products and recreate embeddings.
+    """
+    from app.services.product_service import clear_cache
+    
+    # Clear existing cache and fetch fresh
+    clear_cache()
+    
+    # Re-embed and store
+    await embed_and_store_products()
+    print("Embeddings refreshed successfully")
