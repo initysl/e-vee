@@ -59,6 +59,11 @@ class ChatbotService:
         Returns:
             str: Detected intent
         """
+
+        # Grettings queries
+        if any(greet in message for greet in ["hello", "hi", "hey", "good morning", "good afternoon", "good evening"]):
+            return "greeting"
+
         # Cart  queries
         if any(word in message for word in ["cart", "my cart", "show cart", "view cart", "my items", "what's in my"]):
             return "cart_query"
@@ -86,7 +91,7 @@ class ChatbotService:
         """Extract product ID from user message."""
         match = re.search(r'\d+', message)
         return match.group(0) if match else None
-    
+
     async def _handle_cart_query(self, session_id: str) -> Dict[str, Any]:
         """Handle cart query intent."""
         cart = await get_cart(session_id)

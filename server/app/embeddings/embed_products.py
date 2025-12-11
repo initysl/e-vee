@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 from typing import List, Dict, Any
 import numpy as np
 from app.services.product_service import get_products
-from app.data.platform_data import SHOPHUB_INFO
+from app.data.shophub_data import SHOPHUB_INFO
 from app.embeddings.chroma_client import get_chroma_client
 from app.services.product_service import clear_cache
 from huggingface_hub import InferenceClient
@@ -120,7 +120,7 @@ async def embed_and_store_products():
         ids.append(f"hub_info_faq_{idx}")
 
     # Generate embeddings using HuggingFace API
-    print(f"Generating embeddings for {len(documents)} documents (products + platform info)...")
+    print(f"Generating embeddings for {len(documents)} documents (products + shophub info)...")
     embeddings = create_embeddings(documents)
 
     # Store embeddings in ChromaDB
@@ -131,7 +131,7 @@ async def embed_and_store_products():
         ids=ids
     )
     
-    print(f"Successfully embedded and stored {len(products)} products and {len(SHOPHUB_INFO['faqs']) + 1} platform documents in ChromaDB")
+    print(f"Successfully embedded and stored {len(products)} products and {len(SHOPHUB_INFO['faqs']) + 1} shophub documents in ChromaDB")
 
 async def refresh_embedddings():
     """
