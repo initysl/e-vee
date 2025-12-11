@@ -21,10 +21,12 @@ server/.env/
 server/build/
 server/.env
 server/.pytest_cache/
+__pycache__/
 server/*.log
 server/.DS_Store
 server/chroma_data/
-server/.chromadb/
+server/chroma_db/
+server/*.txt
 server/s.txt
 
 # Database

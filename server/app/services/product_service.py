@@ -1,7 +1,6 @@
 import os
 from dotenv import load_dotenv
 import httpx
-import asyncio
 from typing import List, Dict, Any
 
 load_dotenv()

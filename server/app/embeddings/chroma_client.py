@@ -18,7 +18,6 @@ def initialize_chroma():
             path = PERSIST_DIRECTORY,
             settings=Settings(
                 anonymized_telemetry=False,
-                aloow_reset=True
             )
         )
         print(f"ChromaDB initialized at {PERSIST_DIRECTORY}")

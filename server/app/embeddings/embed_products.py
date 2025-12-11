@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 from typing import List, Dict, Any
+import numpy as np
 from app.services.product_service import get_products
 from app.data.platform_data import SHOPHUB_INFO
 from app.embeddings.chroma_client import get_chroma_client
@@ -19,7 +20,14 @@ def create_embeddings(texts: List[str]) -> List[List[float]]:
           text=text,
           model="sentence-transformers/all-MiniLM-L6-v2"
       )
-      embeddings.append(response[0]) 
+      # HuggingFace returns shape (sequence_length, embedding_dim)
+      # We need mean pooling to get single vector per text
+      if isinstance(response[0], list):
+           # Mean pooling across sequence
+          embedding = [sum(col)/len(col) for col in zip(*response)]
+      else:
+          embedding = response
+          embeddings.append(embedding)
    
   return embeddings
 
@@ -51,6 +59,18 @@ async def embed_and_store_products():
     
     collection = get_chroma_client()
 
+    # Clear existing data to avoid duplicate IDs
+    try:
+        existing_count = collection.count()
+        if existing_count > 0:
+            print(f"Clearing {existing_count} existing documents from collection...")
+            existing_data = collection.get()
+            if existing_data and existing_data['ids']:
+                collection.delete(ids=existing_data['ids'])
+            print("Collection cleared")
+    except Exception as e:
+        print(f"Error clearing collection: {e}")
+
     documents = []
     metadatas = []
     ids = []
@@ -63,8 +83,9 @@ async def embed_and_store_products():
         doc_text = create_product_document(product)
         documents.append(doc_text)
 
-        # Store metadata for retrival
+        # Store metadata for retrieval
         metadatas.append({
+            'type': 'product',
             'product_id': product_id,
             'title': product.get('title', ''),
             'price': str(product.get('price', '')),
@@ -75,41 +96,42 @@ async def embed_and_store_products():
 
         ids.append(f"product_{product_id}")
 
-        # Embed SHOPHUB_INFO 
-        documents.append(SHOPHUB_INFO['description'])
+    # Embed SHOPHUB_INFO (OUTSIDE the product loop!)
+    documents.append(SHOPHUB_INFO['description'])
+    metadatas.append({
+        'type': 'hub_info',
+        'topic': 'description',
+        'content_type': 'general'
+    })
+    ids.append("hub_info_description")
+
+    # Embed each FAQ
+    for idx, faq in enumerate(SHOPHUB_INFO['faqs']):
+        faq_text = f"Q: {faq['question']} A: {faq['answer']}"
+        documents.append(faq_text)
+
         metadatas.append({
             'type': 'hub_info',
-            'topic':'description',
-            'content-type':'general'
+            'topic': faq['topic'],
+            'question': faq['question'],
+            'answer': faq['answer'],
+            'content_type': 'faq'
         })
-        ids.append("hub_info_description")
+        ids.append(f"hub_info_faq_{idx}")
 
-        # Embed each FAQ 
-        for idx, faq in enumerate(SHOPHUB_INFO['faqs']):
-            faq_text = f"Q: {faq['question']} A: {faq['answer']}"
-            documents.append(faq_text)
+    # Generate embeddings using HuggingFace API
+    print(f"Generating embeddings for {len(documents)} documents (products + platform info)...")
+    embeddings = create_embeddings(documents)
 
-            metadatas.append({
-                'type': 'hub_info',
-                'topic': faq['topic'],
-                'question': faq['question'],
-                'answer': faq['answer'],
-                'content-type':'faq'
-            })
-            ids.append(f"hub_info_faq_{idx}")
-
-        # Generate embeddings using HuggingFace API
-        print(f"Generating embeddings for {len(documents)} documents (products + platform info)...")
-        embeddings = create_embeddings(documents)
-
-        # Store embeddings in ChromaDB
-        collection.add(
-            embeddings=embeddings,
-            documents=documents,
-            metadatas=metadatas,
-            ids=ids
-        )
-        print(f"Successfully embedded and stored {len(products)} products and {len(SHOPHUB_INFO['faqs']) + 1} platform documents in ChromaDB")
+    # Store embeddings in ChromaDB
+    collection.add(
+        embeddings=embeddings, # type: ignore
+        documents=documents,
+        metadatas=metadatas,
+        ids=ids
+    )
+    
+    print(f"Successfully embedded and stored {len(products)} products and {len(SHOPHUB_INFO['faqs']) + 1} platform documents in ChromaDB")
 
 async def refresh_embedddings():
     """
