@@ -54,9 +54,15 @@ class ChatbotService:
         elif intent == "product_search" or intent == "shophub_info":
             return await self._handle_semantic_search(message)
         
+        elif intent == "unknown":
+            return {
+                "response": "I'm not sure I understand. I can help you with:\n- Finding products\n- Checking your cart\n- Checking out your cart \n- Store info (shipping, returns, about..)\n- Adding items to cart\n\nWhat would you like to do?",
+                "intent": "unknown"
+            }
+    
         else:
             return{
-                "response": "Hi, I'm E-vee, your shopping assistant. I can help you find products, check your cart, or answer questions about our store. How can i help you today?",
+                "response": "Hi, I'm E-vee, your shopping assistant. How can i help you today?",
                 "intent":"greeting"
             }
 
@@ -93,8 +99,14 @@ class ChatbotService:
         if any(word in message for word in ["shipping", "return", "refund", "policy", "delivery", "warranty", "support", "help"]):
             return "shophub_info"
 
-        # Product search (default for most queries)
-        return "product_search"
+        # Before defaulting to product_search, check if message has product-related keywords
+        product_keywords = ["product", "item", "buy", "shop", "find", "show", "looking for", "need", "want", "price", "cost", "cheap", "expensive", "available"]
+    
+        if any(keyword in message for keyword in product_keywords):
+            return "product_search"
+        
+        # If nothing matches and no product keywords, return unknown
+        return "unknown"
     
     def _extract_product_id(self, message: str) -> str | None:
         """Extract product ID from user message."""
