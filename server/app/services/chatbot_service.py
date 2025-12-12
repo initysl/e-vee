@@ -28,7 +28,7 @@ class ChatbotService:
 
         # Route to appropriate hadnler
         if intent == "cart_query":
-            return await self._handle_checkout(session_id)
+            return await self._handle_cart_query(session_id)
         
         elif intent == "checkout":
             return await self._handle_checkout(session_id)
@@ -40,14 +40,23 @@ class ChatbotService:
                     "response": "Please provide a valid product ID. For example: 'Tell me about product 5'",
                     "intent": "product_by_id"
                 }
-            return await self._handle_add_to_cart(session_id, product_id)
+            return await self._handle_product_by_id(session_id, product_id)
         
+        elif intent == "add_to_cart":  
+            product_id = self._extract_product_id(message)
+            if product_id is None:
+                return {
+                    "response": "Please specify which product to add. For example: 'Add product 5 to cart'",
+                    "intent": "add_to_cart"
+                }
+            return await self._handle_add_to_cart(session_id, product_id)
+
         elif intent == "product_search" or intent == "shophub_info":
             return await self._handle_semantic_search(message)
         
         else:
             return{
-                "response": "I'm E-vee, your shopping assistant. I can help you find products, check your cart, or answer questions about our store. How can i help you today?",
+                "response": "Hi, I'm E-vee, your shopping assistant. I can help you find products, check your cart, or answer questions about our store. How can i help you today?",
                 "intent":"greeting"
             }
 
@@ -60,30 +69,30 @@ class ChatbotService:
             str: Detected intent
         """
 
-        # Grettings queries
+        # Greeting queries (check first for friendly responses)
         if any(greet in message for greet in ["hello", "hi", "hey", "good morning", "good afternoon", "good evening"]):
             return "greeting"
 
-        # Cart  queries
-        if any(word in message for word in ["cart", "my cart", "show cart", "view cart", "my items", "what's in my"]):
-            return "cart_query"
-        
-        # Checkout intent
-        if any(word in message for word in ["checkout", "buy now", "purchase", "place order", "pay"]):
-            return "checkout"
-        
-        # Add to cart 
-        if any(phrase in message for phrase in ["add product", "add item","add this", "add to cart", "put in cart"]):
+        # Add to cart (check early to avoid conflicts with "cart")
+        if any(phrase in message for phrase in ["add product", "add item", "add this", "add to cart", "put in cart"]):
             return "add_to_cart"
-        
+
+        # Checkout (check before cart_query but be specific)
+        if any(word in message for word in ["checkout", "check out", "buy now", "purchase", "place order", "pay now"]):
+            return "checkout"
+
+        # Cart queries (check after checkout and add_to_cart)
+        if any(phrase in message for phrase in ["my cart", "show cart", "view cart", "cart contents", "what's in my cart", "what's in my"]) or message.strip() == "cart":
+            return "cart_query"
+
         # Product by ID
-        if re.search(r'products\s*(?:id|#)?\s*(\d+)', message) or re.search(r'id\s*:?\s*\d+', message):
+        if re.search(r'product\s*(?:id|#)?\s*(\d+)', message) or re.search(r'id\s*:?\s*\d+', message):
             return "product_by_id"
-        
-        # Shophub (shipping, returns, etc.) 
-        if any(word in message for word in ["shipping", "return", "refund", "policy," "delivery", "warranty", "support", "help"]):
+
+        # ShopHub info (shipping, returns, etc.)
+        if any(word in message for word in ["shipping", "return", "refund", "policy", "delivery", "warranty", "support", "help"]):
             return "shophub_info"
-        
+
         # Product search (default for most queries)
         return "product_search"
     

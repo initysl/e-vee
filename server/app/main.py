@@ -15,12 +15,17 @@ async def lifespan(app: FastAPI):
 
     # Startup
     print("Starting up.. Starting ShopHub E-commerce API..")
-    print("Loading products and creating embeddings...")
 
     try:
-        await embed_and_store_products()
         count = get_collection_count()
-        print(f"Succesfully loaded {count} documents into ChromaDB. ✅")
+        if count == 0:
+            print("No data found. Loading products and creating embeddings...")
+            await embed_and_store_products()
+            count = get_collection_count()
+        else:
+            print(f"Found existing {count} documents in ChromaDB. Skipping embedding.")
+        
+        print(f"ChromaDB ready with {count} documents. ✅ ")
     except Exception as e:
         print(f"Error during startup embedding: {e} ❌")
         raise

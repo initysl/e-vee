@@ -20,7 +20,7 @@ async def chat(request: ChatRequest, session_id: Optional[str] = Header(None)):
     if not session_id:
         raise HTTPException(status_code=400, detail="Missing session_id header")
     if not request.message or not request.message.strip():
-        raise HTTPException(status_code=400, detail="Pls provide a Message")
+        raise HTTPException(status_code=400, detail="Pls provide a message")
     
     try:
         chatbot = get_chatbot_service()
