@@ -10,7 +10,7 @@ class Product(BaseModel):
     title: str
     price: float
     description: str
-    catrgory: str
+    category: str
     image: str
     rating: Optional[dict] = None
 
