@@ -78,7 +78,7 @@ class ChatbotService:
             return "add_to_cart"
 
         # Checkout (check before cart_query but be specific)
-        if any(word in message for word in ["checkout", "check out", "buy now", "purchase", "place order", "pay now"]):
+        if any(phrase in message for phrase in ["checkout", "check out", "buy now", "purchase", "place order", "pay now"]):
             return "checkout"
 
         # Cart queries (check after checkout and add_to_cart)
