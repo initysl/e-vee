@@ -8,12 +8,8 @@ export default function Home() {
   const router = useRouter();
 
   const handleGetStarted = () => {
-    let sessionId = localStorage.getItem('sessionId');
-
-    if (!sessionId) {
-      sessionId = uuidv4();
-      localStorage.setItem('sessionId', sessionId);
-    }
+    const sessionId = uuidv4();
+    localStorage.setItem('shophub_session_id', sessionId);
 
     router.push('/market');
   };
@@ -57,7 +53,7 @@ export default function Home() {
         <p className='mt-10 text-lg text-zinc-600 max-w-xl'>
           Enjoy a seamless shopping experience with ShopHub — Coupled with
           <span className='font-semibold text-zinc-800'> E-Vee</span>, your
-          AI-powered chatbot shopping assistant.
+          RAG-powered chatbot shopping assistance
         </p>
 
         <div>
