@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 export default function Home() {
   const router = useRouter();
@@ -15,19 +16,19 @@ export default function Home() {
   };
 
   const products = [
-    { id: 1, image: '/products/shoe.jpg', name: 'Shoe' },
-    { id: 2, image: '/products/watch.jpg', name: 'Watch' },
-    { id: 3, image: '/products/headphone.jpg', name: 'Headphone' },
-    { id: 4, image: '/products/bag.jpg', name: 'Bag' },
-    { id: 5, image: '/products/jewelry.jpg', name: 'Jewelry' },
-    { id: 6, image: '/products/laptop.jpg', name: 'Laptop' },
-    { id: 7, image: '/products/camera.jpg', name: 'Camera' },
-    { id: 8, image: '/products/glasses.jpg', name: 'Glasses' },
+    { id: 1, image: '/products/shoe.jpg', title: 'Shoe' },
+    { id: 2, image: '/products/watch.jpg', title: 'Watch' },
+    { id: 3, image: '/products/headphone.jpg', title: 'Headphone' },
+    { id: 4, image: '/products/bag.jpg', title: 'Bag' },
+    { id: 5, image: '/products/jewelry.jpg', title: 'Jewelry' },
+    { id: 6, image: '/products/laptop.jpg', title: 'Laptop' },
+    { id: 7, image: '/products/camera.jpg', title: 'Camera' },
+    { id: 8, image: '/products/glasses.jpg', title: 'Glasses' },
   ];
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-white font-sans px-4'>
-      <main className='space-y-10 w-full max-w-4xl px-6 py-24 text-left'>
+    <div className='min-h-screen flex items-center justify-center bg-white font-sans'>
+      <main className='space-y-10 w-full max-w-5xl px-6 text-left'>
         <h1 className='text-4xl sm:text-5xl font-bold text-zinc-900'>
           Welcome to <span className='text-blue-600'>ShopHub</span>
         </h1>
@@ -41,9 +42,12 @@ export default function Home() {
                 zIndex: products.length - index,
               }}
             >
-              <img
+              <Image
                 src={product.image}
-                alt={product.name}
+                alt={product.title}
+                width={80}
+                height={80}
+                priority
                 className='w-full h-full object-cover'
               />
             </div>
