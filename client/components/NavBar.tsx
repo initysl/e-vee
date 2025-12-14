@@ -41,8 +41,8 @@ export default function Navbar({
       <div className='px-3 py-2'>
         <div className='flex items-center gap-3'>
           {/* Navigation */}
-          <div className='bg-zinc-700 px-2 py-2 rounded-2xl shadow-lg'>
-            <ul className='flex items-center space-x-1 sm:space-x-2'>
+          <div className='bg-zinc-700 w-72 px-2 py-2 rounded-2xl shadow-lg '>
+            <ul className='flex items-center space-x-1 sm:space-x-2 '>
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 const isHovered = hoveredItem === item.name;
@@ -74,7 +74,7 @@ export default function Navbar({
           </div>
 
           {/* Expandable Search */}
-          <div className='flex items-center'>
+          <div className='hidden sm:flex items-center'>
             {/* Search Button */}
             <button
               onClick={() => setSearchOpen(true)}
@@ -86,7 +86,7 @@ export default function Navbar({
             {/* Search Input */}
             <div
               className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                searchOpen ? 'ml-2 w-64' : 'w-0'
+                searchOpen ? 'ml-2 w-32' : 'w-0'
               }`}
             >
               <Input
