@@ -4,41 +4,30 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MdAddShoppingCart } from 'react-icons/md';
 import { CiSquareInfo } from 'react-icons/ci';
-import { RiShoppingBag2Line } from 'react-icons/ri';
-import { RiRobot3Line } from 'react-icons/ri';
+import { RiShoppingBag2Line, RiRobot3Line } from 'react-icons/ri';
 import { Search } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 interface NavbarProps {
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
-  selectedCategory?: string;
-  onCategoryChange?: (category: string) => void;
-  categories?: string[];
-  showFilters?: boolean;
 }
 
 export default function Navbar({
   searchQuery = '',
   onSearchChange,
-  selectedCategory = 'all',
-  onCategoryChange,
-  categories = [],
-  showFilters = false,
 }: NavbarProps) {
   const pathname = usePathname();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
+  const [searchOpen, setSearchOpen] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Don't render navbar on home page
-  if (pathname === '/') return null;
+  useEffect(() => {
+    if (searchOpen) {
+      inputRef.current?.focus();
+    }
+  }, [searchOpen]);
 
   const navItems = [
     { name: 'Market', href: '/market', icon: RiShoppingBag2Line },
@@ -48,17 +37,16 @@ export default function Navbar({
   ];
 
   return (
-    <nav className='fixed top-4 left-1/2 transform -translate-x-1/2 z-50'>
-      <div className='backdrop-blur-md px-4'>
-        <div className='flex items-center gap-4'>
-          {/* Navigation Items */}
-          <div className='bg-zinc-700 px-3 py-2 rounded-2xl shadow-lg'>
-            <ul className='flex space-x-2 items-center'>
+    <nav className='fixed top-2 left-1/2 -translate-x-1/2 z-50'>
+      <div className='px-3 py-2'>
+        <div className='flex items-center gap-3'>
+          {/* Navigation */}
+          <div className='bg-zinc-700 px-2 py-2 rounded-2xl shadow-lg'>
+            <ul className='flex items-center space-x-1 sm:space-x-2'>
               {navItems.map((item) => {
                 const isActive = pathname === item.href;
                 const isHovered = hoveredItem === item.name;
                 const showBackground = isActive || isHovered;
-                const showLabel = isActive;
 
                 return (
                   <li key={item.name}>
@@ -66,15 +54,15 @@ export default function Navbar({
                       href={item.href}
                       onMouseEnter={() => setHoveredItem(item.name)}
                       onMouseLeave={() => setHoveredItem(null)}
-                      className={`flex gap-2 items-center transition-all duration-300 ease-in-out ${
+                      className={`flex items-center gap-1 sm:gap-2 transition-all duration-300 ${
                         showBackground
-                          ? 'bg-blue-600 text-white px-4 py-2 rounded-xl shadow-lg scale-105'
+                          ? 'bg-blue-600 text-white px-3 sm:px-4 py-2 rounded-xl shadow-md scale-105'
                           : 'text-white hover:text-zinc-200 p-2'
                       }`}
                     >
-                      <item.icon size={18} />
-                      {showLabel && (
-                        <span className='text-sm font-medium animate-in fade-in slide-in-from-left-2 duration-200'>
+                      <item.icon size={18} className='shrink-0' />
+                      {isActive && (
+                        <span className='text-xs sm:text-sm font-medium whitespace-nowrap animate-in fade-in slide-in-from-left-2 duration-200'>
                           {item.name}
                         </span>
                       )}
@@ -85,42 +73,35 @@ export default function Navbar({
             </ul>
           </div>
 
-          {/* Search and Filters - Only show if enabled */}
-          {showFilters && (
-            <>
-              {/* Search */}
-              <div className='relative flex-1 max-w-md transition-all duration-300 ease-in-out'>
-                <Search className='absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 pointer-events-none z-10' />
-                <Input
-                  type='text'
-                  placeholder='Search products...'
-                  value={searchQuery}
-                  onChange={(e) => onSearchChange?.(e.target.value)}
-                  className='pl-10 w-full bg-zinc-700 border-zinc-600 text-white placeholder:text-gray-400 focus:ring-blue-500'
-                />
-              </div>
+          {/* Expandable Search */}
+          <div className='flex items-center'>
+            {/* Search Button */}
+            <button
+              onClick={() => setSearchOpen(true)}
+              className='flex h-10 w-10 items-center justify-center rounded-md bg-zinc-700 text-white hover:bg-zinc-600'
+            >
+              <Search size={18} />
+            </button>
 
-              {/* Category Filter */}
-              <Select value={selectedCategory} onValueChange={onCategoryChange}>
-                <SelectTrigger className='w-40 shrink-0 bg-zinc-700 border-zinc-600 text-white'>
-                  <SelectValue placeholder='All Categories' />
-                </SelectTrigger>
-                <SelectContent className='bg-zinc-800 border-zinc-700'>
-                  {categories.map((category) => (
-                    <SelectItem
-                      key={category}
-                      value={category}
-                      className='text-white hover:bg-zinc-700'
-                    >
-                      {category === 'all'
-                        ? 'All Categories'
-                        : category.charAt(0).toUpperCase() + category.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </>
-          )}
+            {/* Search Input */}
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                searchOpen ? 'ml-2 w-64' : 'w-0'
+              }`}
+            >
+              <Input
+                ref={inputRef}
+                type='text'
+                value={searchQuery}
+                onChange={(e) => onSearchChange?.(e.target.value)}
+                placeholder='Search products...'
+                className='h-10 bg-zinc-700 text-white placeholder:text-zinc-300 focus:ring-blue-500'
+                onBlur={() => {
+                  if (!searchQuery) setSearchOpen(false);
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </nav>

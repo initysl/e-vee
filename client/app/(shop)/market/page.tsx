@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import ProductCardSkeleton from '@/components/ProductCardSkeleton';
-import Navbar from '@/components/NavBar';
 
 export default function MarketPage() {
   const { products, loading, error } = useProducts();
@@ -35,20 +34,10 @@ export default function MarketPage() {
   }, [products, searchQuery, selectedCategory]);
 
   return (
-    <div className='min-h-screen bg-gray-50'>
-      {/* Navbar with filters - only shows on non-home pages */}
-      <Navbar
-        showFilters={true}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        categories={categories}
-      />
-
+    <div className='min-h-screen'>
       {/* Add padding top to account for fixed navbar */}
-      <div className='pt-24'>
-        <div className='container mx-auto px-4'>
+      <div className=''>
+        <div>
           {/* Results count */}
           {!loading && (
             <p className='text-gray-600 mb-4'>
