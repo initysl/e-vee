@@ -22,7 +22,7 @@ export default function ChatbotButton() {
       >
         {/* Animated Background Rings */}
         <motion.div
-          className='absolute inset-0 rounded-full bg-gradient-to-r from-blue-500 to-zinc-500 opacity-75'
+          className='absolute inset-0 rounded-full bg-gradient-to-r from-blue-600 to-zinc-700 opacity-75'
           animate={{
             scale: isHovered ? [1, 1.2, 1] : 1,
             opacity: isHovered ? [0.75, 0.5, 0.75] : 0.75,
@@ -35,7 +35,7 @@ export default function ChatbotButton() {
         />
 
         {/* Main Button */}
-        <div className='relative w-10 h-10 bg-gradient-to-b from-blue-600 to-zinc-600 rounded-full shadow-2xl flex items-center justify-center'>
+        <div className='relative w-10 h-10 bg-gradient-to-b from-blue-600 to-zinc-700 rounded-full shadow-2xl flex items-center justify-center'>
           <AnimatePresence mode='wait'>
             {!isOpen ? (
               <motion.div
@@ -98,10 +98,10 @@ export default function ChatbotButton() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className='fixed bottom-28 right-6 w-96 h-[400px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-40'
+            className='fixed bottom-22 right-6 w-80 h-[400px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-40'
           >
             {/* Header */}
-            <div className='bg-blue-700 p-4 text-white'>
+            <div className='bg-blue-600 p-4 text-white'>
               <div className='flex items-center gap-3'>
                 <div className='w-10 h-10 bg-white/20 rounded-full flex items-center justify-center'>
                   <RiRobot3Line size={24} />
@@ -125,7 +125,7 @@ export default function ChatbotButton() {
               <input
                 type='text'
                 placeholder='Type your message...'
-                className='w-full px-2 py-1 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500'
+                className='w-full px-2 py-1 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600'
               />
             </div>
           </motion.div>
