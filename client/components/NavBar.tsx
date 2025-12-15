@@ -70,10 +70,12 @@ export default function Navbar() {
                   {isActive && (
                     <span className='text-sm font-medium'>{item.name}</span>
                   )}
-                  {item.badge && item.badge > 0 && (
+                  {item.badge && item.badge > 0 ? (
                     <span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold'>
                       {item.badge}
                     </span>
+                  ) : (
+                    ''
                   )}
                 </Link>
               </li>
