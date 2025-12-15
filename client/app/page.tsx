@@ -55,9 +55,7 @@ export default function Home() {
         </div>
 
         <p className='mt-10 text-lg text-zinc-600 max-w-xl'>
-          Enjoy a seamless shopping experience with ShopHub — Coupled with
-          <span className='font-semibold text-zinc-800'> E-Vee</span>, your
-          RAG-powered chatbot shopping assistance
+          Couple with a RAG-powered shopping assistance chatbot
         </p>
 
         <div>

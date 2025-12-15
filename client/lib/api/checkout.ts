@@ -23,7 +23,7 @@ export const checkoutApi = {
   process: async (checkoutData: CheckoutRequest): Promise<CheckoutResponse> => {
     try {
       const response = await apiClient.post<CheckoutResponse>(
-        '/checkout/',
+        '/checkout',
         checkoutData
       );
       return response.data;

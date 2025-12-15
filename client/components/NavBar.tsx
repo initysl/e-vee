@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { MdAddShoppingCart } from 'react-icons/md';
 import { CiSquareInfo } from 'react-icons/ci';
 import { RiShoppingBag2Line, RiRobot3Line } from 'react-icons/ri';
+import { Package } from 'lucide-react';
 import { useState } from 'react';
 import { useCart } from '@/context/CartContext';
 
@@ -14,15 +15,27 @@ export default function Navbar() {
   const { getItemCount } = useCart();
 
   const navItems = [
-    { name: 'Market', href: '/market', icon: RiShoppingBag2Line },
-    { name: 'Info', href: '/info', icon: CiSquareInfo },
+    {
+      name: 'Market',
+      href: '/market',
+      icon: RiShoppingBag2Line,
+      matchPaths: ['/market'],
+    },
+    {
+      name: 'Product',
+      href: '/product',
+      icon: Package,
+      matchPaths: ['/product'],
+    },
+    { name: 'Info', href: '/info', icon: CiSquareInfo, matchPaths: ['/info'] },
     {
       name: 'Cart',
       href: '/cart',
       icon: MdAddShoppingCart,
       badge: getItemCount(),
+      matchPaths: ['/cart'],
     },
-    { name: 'Evee', href: '/chat', icon: RiRobot3Line },
+    { name: 'Evee', href: '/chat', icon: RiRobot3Line, matchPaths: ['/chat'] },
   ];
 
   return (
@@ -30,7 +43,10 @@ export default function Navbar() {
       <div className='bg-zinc-700 px-3 py-2 rounded-2xl shadow-xl'>
         <ul className='flex items-center gap-2'>
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            // Check if current path matches this nav item
+            const isActive = item.matchPaths.some((path) =>
+              pathname.startsWith(path)
+            );
             const isHovered = hoveredItem === item.name;
             const showBackground = isActive || isHovered;
 
