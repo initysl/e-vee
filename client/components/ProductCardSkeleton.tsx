@@ -1,10 +1,9 @@
-import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductCardSkeleton() {
   return (
-    <Card className='h-full border-0 bg-gradient-to-br from-white to-gray-50'>
-      <CardContent className='p-4'>
+    <div className='h-full border-0 bg-gradient-to-br from-white to-gray-50'>
+      <div className='p-4'>
         {/* Image skeleton with gradient background */}
         <div className='relative w-full h-48 mb-4 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 overflow-hidden'>
           <Skeleton className='w-full h-full' />
@@ -43,7 +42,7 @@ export default function ProductCardSkeleton() {
             <Skeleton className='h-8 w-20 rounded-full' />
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

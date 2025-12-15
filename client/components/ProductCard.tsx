@@ -7,6 +7,7 @@ import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
 import { ShoppingCart, Heart, Plus, Minus, Star } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { IoStar } from 'react-icons/io5';
 
 interface ProductCardProps {
   product: Product;
@@ -83,9 +84,9 @@ export default function ProductCard({ product }: ProductCardProps) {
 
           {/* Rating & Reviews */}
           {product.rating && (
-            <div className='flex items-center gap-2'>
+            <div className='flex items-center gap-2 mt-2'>
               <div className='flex items-center gap-1'>
-                <span className='text-yellow-500'>⭐</span>
+                <IoStar className='text-yellow-500 w-4 h-4' />
                 <span className='text-sm font-semibold text-gray-900'>
                   {product.rating.rate}
                 </span>
