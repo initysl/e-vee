@@ -6,25 +6,25 @@ export default function ProductCardSkeleton() {
     <Card className='h-full'>
       <CardContent className='p-4'>
         {/* Image skeleton */}
-        <Skeleton className='w-full h-48 mb-4' />
+        <Skeleton className='w-full h-40 mb-3 rounded' />
 
-        {/* Title skeleton */}
-        <Skeleton className='h-6 w-3/4 mb-2' />
-        <Skeleton className='h-6 w-1/2 mb-2' />
+        {/* Title skeleton - 2 lines */}
+        <Skeleton className='h-4 w-full mb-1.5' />
+        <Skeleton className='h-4 w-3/4 mb-3' />
 
-        {/* Description skeleton */}
-        <Skeleton className='h-4 w-full mb-1' />
-        <Skeleton className='h-4 w-5/6 mb-4' />
+        {/* Description skeleton - 2 lines */}
+        <Skeleton className='h-3 w-full mb-1' />
+        <Skeleton className='h-3 w-5/6 mb-3' />
 
         {/* Price and rating skeleton */}
-        <div className='flex items-center justify-between mt-4'>
-          <Skeleton className='h-8 w-20' />
-          <Skeleton className='h-4 w-16' />
+        <div className='flex items-center justify-between'>
+          <Skeleton className='h-6 w-16' />
+          <Skeleton className='h-3 w-14' />
         </div>
       </CardContent>
 
       <CardFooter className='p-4 pt-0'>
-        <Skeleton className='h-10 w-full' />
+        <Skeleton className='h-9 w-full rounded' />
       </CardFooter>
     </Card>
   );

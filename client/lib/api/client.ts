@@ -8,8 +8,10 @@ export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    Accept: 'application/json',
   },
   timeout: 10000,
+  withCredentials: false,
 });
 
 // Use getSession from session.ts
@@ -37,12 +39,16 @@ apiClient.interceptors.request.use(
   }
 );
 
-// Response interceptor (keep existing error handling)
+// Response interceptor
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response) {
       console.error('API Error:', error.response.data);
+    } else if (error.code === 'ERR_NETWORK') {
+      console.error(
+        'Network Error: Cannot reach backend. Check CORS and backend is running.'
+      );
     }
     return Promise.reject(error);
   }

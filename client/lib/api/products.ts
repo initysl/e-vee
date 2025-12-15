@@ -5,7 +5,7 @@ export const productsApi = {
   // Get all products
   getAll: async (): Promise<Product[]> => {
     try {
-      const response = await apiClient.get<Product[]>('/products/');
+      const response = await apiClient.get<Product[]>('/products');
       return response.data;
     } catch (error) {
       console.error('Error fetching products:', error);

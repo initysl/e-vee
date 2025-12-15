@@ -36,7 +36,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     <Link href={`/product/${product.id}`}>
       <Card className='h-full hover:shadow-lg transition-shadow cursor-pointer'>
         <CardContent className='p-4'>
-          <div className='relative w-full h-48 mb-4'>
+          <div className='relative w-full h-40 mb-4'>
             <Image
               src={product.image}
               alt={product.title}

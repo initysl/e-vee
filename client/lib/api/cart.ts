@@ -12,7 +12,7 @@ export const cartApi = {
   // Get current cart
   get: async (): Promise<Cart> => {
     try {
-      const response = await apiClient.get<Cart>('/cart/');
+      const response = await apiClient.get<Cart>('/cart');
       return response.data;
     } catch (error) {
       console.error('Error fetching cart:', error);

@@ -4,17 +4,24 @@ import { useState, useEffect } from 'react';
 import { useProducts } from '@/hooks/useProducts';
 import ProductCard from '@/components/ProductCard';
 import ProductCardSkeleton from '@/components/ProductCardSkeleton';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export default function MarketPage() {
   const { products, loading, error } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredProducts, setFilteredProducts] = useState(products);
 
-  // Get unique categories
   const categories = ['all', ...new Set(products.map((p) => p.category))];
 
-  // Filter products based on search and category
   useEffect(() => {
     let filtered = products;
 
@@ -35,52 +42,69 @@ export default function MarketPage() {
 
   return (
     <div className='min-h-screen'>
-      {/* Add padding top to account for fixed navbar */}
-      <div className=''>
-        <div>
-          {/* Results count */}
-          {!loading && (
-            <p className='text-gray-600 mb-4'>
-              Showing {filteredProducts.length} of {products.length} products
-            </p>
-          )}
-
-          {/* Error State */}
-          {error && (
-            <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6'>
-              <p className='font-semibold'>Error loading products</p>
-              <p className='text-sm'>{error}</p>
+      <div className='container mx-auto '>
+        {/* Page Header with Search/Filters */}
+        <div className='mb-8'>
+          <div className='flex flex-col sm:flex-row justify-center gap-3'>
+            {/* Search */}
+            <div className='relative'>
+              <Search className='absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4' />
+              <Input
+                type='text'
+                placeholder='Search products...'
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className='pl-10'
+              />
             </div>
-          )}
 
-          {/* Loading State */}
-          {loading && (
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-              {Array.from({ length: 8 }).map((_, index) => (
-                <ProductCardSkeleton key={index} />
-              ))}
-            </div>
-          )}
+            {/* Category */}
+            <Select
+              value={selectedCategory}
+              onValueChange={setSelectedCategory}
+            >
+              <SelectTrigger className='w-full sm:w-48'>
+                <SelectValue placeholder='Category' />
+              </SelectTrigger>
+              <SelectContent>
+                {categories.map((cat) => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat === 'all'
+                      ? 'All Categories'
+                      : cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-          {/* Products Grid */}
-          {!loading && !error && filteredProducts.length > 0 && (
-            <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          )}
-
-          {/* No Results */}
-          {!loading && !error && filteredProducts.length === 0 && (
-            <div className='text-center py-12'>
-              <p className='text-gray-500 text-lg'>No products found</p>
-              <p className='text-gray-400 text-sm mt-2'>
-                Try adjusting your search or filter criteria
-              </p>
-            </div>
-          )}
+          <p className='text-sm text-gray-600 mt-3'>
+            Showing {filteredProducts.length} of {products.length} products
+          </p>
         </div>
+
+        {/* Products Grid */}
+        {loading && (
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+            {Array.from({ length: 8 }).map((_, i) => (
+              <ProductCardSkeleton key={i} />
+            ))}
+          </div>
+        )}
+
+        {!loading && filteredProducts.length > 0 && (
+          <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6'>
+            {filteredProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        )}
+
+        {!loading && filteredProducts.length === 0 && (
+          <div className='text-center py-12'>
+            <p className='text-gray-500'>No products found</p>
+          </div>
+        )}
       </div>
     </div>
   );
