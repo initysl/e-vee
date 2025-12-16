@@ -6,6 +6,9 @@ export const SESSION_KEY = 'shophub_session_id';
 
 export const hasSession = (): boolean => {
   if (typeof window === 'undefined') return false;
+
+  /*If getItem returns "some-user-token" (a truthy value), !! converts it to true.
+  If getItem returns null (a falsy value), !! converts it to false.*/
   return !!localStorage.getItem(SESSION_KEY);
 };
 
@@ -21,9 +24,7 @@ export const createSession = (sessionId: string): void => {
   localStorage.setItem(SESSION_KEY, sessionId);
 };
 
-/**
- * Clear session (logout)
- */
+// Clear session (logout)
 export const clearSession = (): void => {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(SESSION_KEY);

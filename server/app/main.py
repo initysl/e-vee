@@ -39,7 +39,7 @@ async def lifespan(app: FastAPI):
 # Initialize FastAPI app
 app = FastAPI(
     title="ShopHub E-commerce API",
-    description="AI-powered e-commerce platform with chatbot assistance",
+    description="RAG-powered e-commerce platform with chatbot assistance",
     version="1.0.0",
     lifespan=lifespan
 )

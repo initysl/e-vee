@@ -62,7 +62,7 @@ class ChatbotService:
     
         else:
             return{
-                "response": "Hi, I'm E-vee, your shopping assistant. How can i help you today?",
+                "response": "Hey there!, I'm E-vee, your shopping assistant. How can i help you today?",
                 "intent":"greeting"
             }
 

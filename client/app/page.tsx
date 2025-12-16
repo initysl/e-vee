@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
+import { createSession } from '@/lib/session'; // Import the utility
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
@@ -9,9 +10,12 @@ export default function Home() {
   const router = useRouter();
 
   const handleGetStarted = () => {
+    // Generate session ID
     const sessionId = uuidv4();
-    localStorage.setItem('shophub_session_id', sessionId);
-
+    // Use the utility function for consistency
+    createSession(sessionId);
+    console.log('Session created:', sessionId);
+    // Navigate to market
     router.push('/market');
   };
 
@@ -36,7 +40,7 @@ export default function Home() {
           {products.map((product, index) => (
             <div
               key={product.id}
-              className='shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-white shadow-md transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl relative cursor-pointer'
+              className='shrink-0 w-18 h-18 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-white shadow-md transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl relative cursor-pointer'
               style={{
                 marginLeft: index === 0 ? '0' : '-32px',
                 zIndex: products.length - index,
@@ -55,7 +59,7 @@ export default function Home() {
         </div>
 
         <p className='mt-10 text-lg text-zinc-600 max-w-xl'>
-          Couple with a RAG-powered shopping assistance chatbot
+          Coupled with a RAG-powered shopping assistance chatbot
         </p>
 
         <div>
