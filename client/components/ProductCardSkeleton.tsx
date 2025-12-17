@@ -2,7 +2,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 export default function ProductCardSkeleton() {
   return (
-    <div className='h-full border-0 bg-linear-to-br from-white to-gray-50'>
+    <div className='animate-pulse h-full border-0 bg-linear-to-br from-white to-gray-50'>
       <div className='p-4'>
         {/* Image skeleton with linear background */}
         <div className='relative w-full h-48 mb-4 rounded-2xl bg-linear-to-br from-blue-100 to-purple-100 overflow-hidden'>

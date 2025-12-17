@@ -2,7 +2,7 @@
 
 export default function ProductDetailSkeleton() {
   return (
-    <div className='container py-12 animate-pulse'>
+    <div className='container animate-pulse'>
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-10'>
         {/* Image Skeleton */}
         <div className='relative rounded-2xl overflow-hidden bg-gray-100 h-90 flex items-center justify-center'>
