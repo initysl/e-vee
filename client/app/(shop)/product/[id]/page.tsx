@@ -10,7 +10,6 @@ import { useCart } from '@/context/CartContext';
 import { Product } from '@/types/product';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { IoStar } from 'react-icons/io5';
-import { IoArrowBackCircleOutline } from 'react-icons/io5';
 import { productsApi } from '@/lib/api/products';
 
 export default function ProductDetailPage() {
@@ -75,16 +74,6 @@ export default function ProductDetailPage() {
 
   return (
     <div className='container'>
-      <Link
-        href='/market'
-        className='fixed top-70 left-4 z-50 transition-transform duration-300 ease-in-out hover:-translate-y-1 hover:scale-105'
-      >
-        <IoArrowBackCircleOutline
-          size={30}
-          className='text-gray-700 hover:text-blue-600'
-        />
-      </Link>
-
       <div className='grid grid-cols-1 lg:grid-cols-2 gap-10'>
         {/* Animated Image */}
         <motion.div

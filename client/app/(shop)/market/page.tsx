@@ -42,7 +42,7 @@ export default function MarketPage() {
 
   return (
     <div className='min-h-screen'>
-      <div className='container mx-auto '>
+      <div className='container'>
         {/* Page Header with Search/Filters */}
         <div className='mb-8'>
           <div className='flex flex-col sm:flex-row justify-center gap-3'>

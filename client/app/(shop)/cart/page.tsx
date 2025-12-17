@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Trash2, Plus, Minus, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useState } from 'react';
 import { RiShoppingBag2Line } from 'react-icons/ri';
+import CartSkeleton from '@/components/CartSkeleton';
 
 export default function CartPage() {
   const { cart, loading, removeFromCart, updateQuantity, clearCart } =
@@ -42,6 +43,15 @@ export default function CartPage() {
     }
   };
 
+  // Loading State
+  if (loading) {
+    return (
+      <>
+        <CartSkeleton />
+      </>
+    );
+  }
+
   // Empty Cart State
   if (!loading && (!cart || cart.item_count === 0)) {
     return (
@@ -69,21 +79,8 @@ export default function CartPage() {
     );
   }
 
-  // Loading State
-  if (loading) {
-    return (
-      <div className='container mx-auto px-4 py-8'>
-        <div className='animate-pulse space-y-4'>
-          <div className='h-8 bg-gray-200 rounded w-48 animate-pulse'></div>
-          <div className='h-32 bg-gray-200 rounded animate-pulse'></div>
-          <div className='h-32 bg-gray-200 rounded animate-pulse'></div>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className='container mx-auto'>
+    <div className='container'>
       {/* Header */}
       <div className='flex items-center justify-between mb-8'>
         <div>
@@ -184,7 +181,7 @@ export default function CartPage() {
                   <div className='flex flex-col items-end justify-between'>
                     <div className='text-right'>
                       <p className='text-sm text-gray-500 mb-1'>Subtotal</p>
-                      <p className='text-md font-semibold text-gray-900'>
+                      <p className='font-semibold text-gray-900'>
                         ${item.subtotal.toFixed(2)}
                       </p>
                     </div>
@@ -197,29 +194,29 @@ export default function CartPage() {
 
         {/* Order Summary */}
         <div className='lg:col-span-1'>
-          <div className='sticky top-24 bg-white border-2 rounded-2xl'>
+          <div className='sticky top-20 bg-white border-2 rounded-2xl'>
             <div className='p-6'>
               <h2 className='text-md font-normal text-gray-900 mb-6'>
                 Order Summary
               </h2>
 
               <div className='space-y-4'>
-                <div className='flex justify-between text-gray-600'>
-                  <span className='font-normal text-sm'>Subtotal</span>
-                  <span className='text-md font-semibold'>
+                <div className='flex justify-between text-sm'>
+                  <span className='font-normal text-gray-600'>Subtotal</span>
+                  <span className='font-semibold'>
                     ${cart?.total.toFixed(2)}
                   </span>
                 </div>
 
-                <div className='flex justify-between text-gray-600'>
-                  <span className='font-normal text-sm'>Shipping</span>
+                <div className='flex justify-between text-sm'>
+                  <span className='font-normal text-gray-600'>Shipping</span>
                   <span className='font-normal text-green-600'>
                     {cart && cart.total > 50 ? 'FREE' : '$5.99'}
                   </span>
                 </div>
 
-                <div className='flex justify-between text-gray-600'>
-                  <span className='text-sm'>Tax (8%)</span>
+                <div className='flex justify-between text-sm'>
+                  <span className='text-gray-600 font-normal'>Tax (8%)</span>
                   <span className='font-normal'>
                     ${cart ? (cart.total * 0.08).toFixed(2) : '0.00'}
                   </span>
@@ -229,7 +226,7 @@ export default function CartPage() {
 
                 <div className='flex justify-between items-center text-md font-normal text-gray-900'>
                   <span>Total</span>
-                  <span className='text-gray-900 text-md font-semibold '>
+                  <span className='text-gray-900 font-semibold'>
                     $
                     {cart
                       ? (
@@ -248,7 +245,7 @@ export default function CartPage() {
                 )}
                 <div className='flex flex-col gap-5'>
                   <Link href='/checkout'>
-                    <Button className='cursor-pointer w-full text-sm shadow-lg hover:shadow-xl transition-all'>
+                    <Button className='bg-blue-700 hover:bg-blue-600 cursor-pointer w-full text-sm shadow-lg hover:shadow-xl transition-all'>
                       Proceed to Checkout
                       <ArrowRight className='ml-2' />
                     </Button>
