@@ -48,7 +48,7 @@ export default function CartPage() {
       <div className='container mx-auto px-4 py-16'>
         <div className='max-w-md mx-auto text-center p-12'>
           <div className='flex justify-center mb-6'>
-            <div className='w-24 h-24 bg-gradient-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center'>
+            <div className='w-24 h-24 bg-linear-to-br from-blue-100 to-purple-100 rounded-full flex items-center justify-center'>
               <ShoppingBag className='w-12 h-12 text-gray-400' />
             </div>
           </div>
@@ -74,9 +74,9 @@ export default function CartPage() {
     return (
       <div className='container mx-auto px-4 py-8'>
         <div className='animate-pulse space-y-4'>
-          <div className='h-8 bg-gray-200 rounded w-48'></div>
-          <div className='h-32 bg-gray-200 rounded'></div>
-          <div className='h-32 bg-gray-200 rounded'></div>
+          <div className='h-8 bg-gray-200 rounded w-48 animate-pulse'></div>
+          <div className='h-32 bg-gray-200 rounded animate-pulse'></div>
+          <div className='h-32 bg-gray-200 rounded animate-pulse'></div>
         </div>
       </div>
     );
@@ -113,7 +113,7 @@ export default function CartPage() {
               <div className='p-0'>
                 <div className='flex gap-4 p-4'>
                   {/* Product Image */}
-                  <div className='relative w-32 h-32 flex-shrink-0 rounded-lg bg-gradient-to-br from-blue-100 to-purple-100 overflow-hidden'>
+                  <div className='relative w-32 h-32 shrink-0 rounded-lg bg-linear-to-br from-blue-100 to-purple-100 overflow-hidden'>
                     <Image
                       src={item.image}
                       alt={item.title}

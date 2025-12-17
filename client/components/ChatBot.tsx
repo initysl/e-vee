@@ -4,33 +4,23 @@ import { RiRobot3Line } from 'react-icons/ri';
 import { X, Send, Loader2 } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { chatbotApi } from '@/lib/api';
-import { ChatMessage } from '@/types/chatbot';
+import { useChatbot } from '@/hooks/useChatbot';
 import { Button } from '@/components/ui/button';
 
-export default function ChatbotButton() {
+export default function Chatbot() {
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'assistant',
-      content:
-        "Hi! I'm E-vee, your shopping assistant. How can I help you today?",
-      timestamp: new Date(),
-    },
-  ]);
   const [inputMessage, setInputMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+
+  // Use the custom hook
+  const { messages, loading, sendMessage, clearChat } = useChatbot();
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Auto-scroll to bottom when new messages arrive
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
   useEffect(() => {
-    scrollToBottom();
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   // Focus input when chat opens
@@ -41,46 +31,12 @@ export default function ChatbotButton() {
   }, [isOpen]);
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim() || isLoading) return;
+    if (!inputMessage.trim() || loading) return;
 
-    const userMessage: ChatMessage = {
-      role: 'user',
-      content: inputMessage,
-      timestamp: new Date(),
-    };
+    const message = inputMessage;
+    setInputMessage(''); // Clear input immediately
 
-    // Add user message to chat
-    setMessages((prev) => [...prev, userMessage]);
-    setInputMessage('');
-    setIsLoading(true);
-
-    try {
-      // Call chatbot API
-      const response = await chatbotApi.chat(inputMessage);
-
-      // Add assistant response
-      const assistantMessage: ChatMessage = {
-        role: 'assistant',
-        content: response.response,
-        timestamp: new Date(),
-        intent: response.intent,
-      };
-
-      setMessages((prev) => [...prev, assistantMessage]);
-    } catch (error) {
-      console.error('Chatbot error:', error);
-
-      // Add error message
-      const errorMessage: ChatMessage = {
-        role: 'assistant',
-        content: "Sorry, I'm having trouble connecting. Please try again.",
-        timestamp: new Date(),
-      };
-
-      setMessages((prev) => [...prev, errorMessage]);
-    } finally {
-      setIsLoading(false);
-    }
+    await sendMessage(message);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -88,6 +44,12 @@ export default function ChatbotButton() {
       e.preventDefault();
       handleSendMessage();
     }
+  };
+
+  const handleClearChat = () => {
+    clearChat();
+    // Re-add welcome message
+    sendMessage(''); // This will trigger the welcome message logic
   };
 
   return (
@@ -175,7 +137,7 @@ export default function ChatbotButton() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className='fixed bottom-24 right-6 w-96 h-112.5 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-40 flex flex-col'
+            className='fixed bottom-24 right-6 w-96 h-125 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-40 flex flex-col'
           >
             {/* Header */}
             <div className='bg-linear-to-r from-blue-600 to-blue-700 p-4 text-white shrink-0'>
@@ -188,7 +150,7 @@ export default function ChatbotButton() {
                   <p className='text-xs text-white/80'>Always here to help</p>
                 </div>
                 <button
-                  onClick={() => setMessages([messages[0]])}
+                  onClick={handleClearChat}
                   className='text-xs text-white/80 hover:text-white'
                 >
                   Clear
@@ -198,6 +160,18 @@ export default function ChatbotButton() {
 
             {/* Chat Messages */}
             <div className='flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50'>
+              {/* Welcome message if no messages */}
+              {messages.length === 0 && (
+                <div className='flex justify-start'>
+                  <div className='bg-white rounded-2xl px-4 py-2 shadow-sm border border-gray-200'>
+                    <p className='text-sm text-gray-800'>
+                      Hi! I'm E-vee, your shopping assistant. How can I help you
+                      today?
+                    </p>
+                  </div>
+                </div>
+              )}
+
               {messages.map((msg, index) => (
                 <motion.div
                   key={index}
@@ -231,7 +205,7 @@ export default function ChatbotButton() {
               ))}
 
               {/* Typing Indicator */}
-              {isLoading && (
+              {loading && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -284,16 +258,16 @@ export default function ChatbotButton() {
                   onChange={(e) => setInputMessage(e.target.value)}
                   onKeyDown={handleKeyPress}
                   placeholder='Type your message...'
-                  disabled={isLoading}
+                  disabled={loading}
                   className='flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 text-sm'
                 />
                 <Button
                   onClick={handleSendMessage}
-                  disabled={!inputMessage.trim() || isLoading}
+                  disabled={!inputMessage.trim() || loading}
                   size='icon'
                   className='rounded-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shrink-0'
                 >
-                  {isLoading ? (
+                  {loading ? (
                     <Loader2 className='h-4 w-4 animate-spin' />
                   ) : (
                     <Send className='h-4 w-4' />

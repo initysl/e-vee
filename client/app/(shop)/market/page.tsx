@@ -15,7 +15,7 @@ import {
 } from '@/components/ui/select';
 
 export default function MarketPage() {
-  const { products, loading, error } = useProducts();
+  const { products, loading } = useProducts();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [filteredProducts, setFilteredProducts] = useState(products);
