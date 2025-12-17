@@ -11,6 +11,7 @@ import { Product } from '@/types/product';
 import { ShoppingCart, Plus, Minus } from 'lucide-react';
 import { IoStar } from 'react-icons/io5';
 import { productsApi } from '@/lib/api/products';
+import ProductDetailSkeleton from '@/components/ProductDetailSkeleton';
 
 export default function ProductDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -61,11 +62,7 @@ export default function ProductDetailPage() {
   };
 
   if (loading) {
-    return (
-      <div className='container py-20 text-center text-muted-foreground'>
-        Loading product…
-      </div>
-    );
+    return <ProductDetailSkeleton />;
   }
 
   if (!product) {
