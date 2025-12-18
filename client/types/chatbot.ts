@@ -6,6 +6,7 @@ export interface ChatMessage {
   content: string;
   timestamp: Date;
   intent?: string;
+  action?: string;
 }
 
 export interface ChatRequest {
@@ -16,6 +17,7 @@ export interface ChatResponse {
   response: string;
   intent: string;
   metadata?: ChatMetadata;
+  action?: string;
 }
 
 export interface ChatMetadata {
@@ -23,10 +25,13 @@ export interface ChatMetadata {
   product?: Product;
   results?: any[];
   checkout_ready?: boolean;
+  action?: string;
+  added_products?: any[];
+  removed_products?: any[];
+  failed_products?: string[];
   [key: string]: any;
 }
 
-// For displaying chat history
 export interface ChatHistory {
   messages: ChatMessage[];
   isLoading: boolean;

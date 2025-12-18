@@ -1,24 +1,26 @@
 'use client';
 
 import { RiRobot3Line } from 'react-icons/ri';
-import { X, Send, Loader2 } from 'lucide-react';
+import { X, Send, Loader2, ShoppingCart, ExternalLink } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useChatbot } from '@/hooks/useChatbot';
 import { Button } from '@/components/ui/button';
+import { ChatMessage } from '@/types/chatbot';
 
 export default function Chatbot() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
   const [inputMessage, setInputMessage] = useState('');
 
-  // Use the custom hook
   const { messages, loading, sendMessage, clearChat } = useChatbot();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom when new messages arrive
+  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
@@ -34,7 +36,7 @@ export default function Chatbot() {
     if (!inputMessage.trim() || loading) return;
 
     const message = inputMessage;
-    setInputMessage(''); // Clear input immediately
+    setInputMessage('');
 
     await sendMessage(message);
   };
@@ -47,9 +49,111 @@ export default function Chatbot() {
   };
 
   const handleClearChat = () => {
-    clearChat();
-    // Re-add welcome message
-    sendMessage(''); // This will trigger the welcome message logic
+    if (confirm('Clear chat history?')) {
+      clearChat();
+    }
+  };
+
+  const handleAction = (action?: string) => {
+    if (!action) return;
+
+    switch (action) {
+      case 'redirect_to_checkout':
+      case 'show_checkout_button':
+        router.push('/checkout');
+        break;
+      case 'show_cart_button':
+        router.push('/cart');
+        break;
+      case 'browse_products':
+        router.push('/market');
+        break;
+      default:
+        break;
+    }
+  };
+
+  const renderMessage = (msg: ChatMessage, index: number) => {
+    const isUser = msg.role === 'user';
+
+    return (
+      <motion.div
+        key={index}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3 }}
+        className={`flex flex-col gap-2 ${
+          isUser ? 'items-end' : 'items-start'
+        }`}
+      >
+        <div
+          className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+            isUser
+              ? 'bg-linear-to-r from-blue-600 to-blue-700 text-white'
+              : 'bg-white text-gray-800 shadow-sm border border-gray-200'
+          }`}
+        >
+          <p className='text-sm whitespace-pre-wrap'>{msg.content}</p>
+          <p
+            className={`text-xs mt-1 ${
+              isUser ? 'text-blue-100' : 'text-gray-400'
+            }`}
+          >
+            {msg.timestamp.toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            })}
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        {!isUser && msg.action && (
+          <div className='flex gap-2 mt-1'>
+            {msg.action === 'redirect_to_checkout' && (
+              <Button
+                size='sm'
+                onClick={() => handleAction(msg.action)}
+                className='text-xs bg-blue-600 hover:bg-blue-700'
+              >
+                <ShoppingCart className='w-3 h-3 mr-1' />
+                Go to Checkout
+              </Button>
+            )}
+            {msg.action === 'show_cart_button' && (
+              <Button
+                size='sm'
+                variant='outline'
+                onClick={() => handleAction(msg.action)}
+                className='text-xs'
+              >
+                <ShoppingCart className='w-3 h-3 mr-1' />
+                View Cart
+              </Button>
+            )}
+            {msg.action === 'browse_products' && (
+              <Button
+                size='sm'
+                variant='outline'
+                onClick={() => handleAction(msg.action)}
+                className='text-xs'
+              >
+                <ExternalLink className='w-3 h-3 mr-1' />
+                Browse Products
+              </Button>
+            )}
+            {msg.action === 'show_checkout_button' && (
+              <Button
+                size='sm'
+                onClick={() => handleAction(msg.action)}
+                className='text-xs bg-green-600 hover:bg-green-700'
+              >
+                Proceed to Checkout
+              </Button>
+            )}
+          </div>
+        )}
+      </motion.div>
+    );
   };
 
   return (
@@ -63,7 +167,6 @@ export default function Chatbot() {
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
       >
-        {/* Animated Background Rings */}
         <motion.div
           className='absolute inset-0 rounded-full bg-linear-to-r from-blue-600 to-zinc-700 opacity-75'
           animate={{
@@ -77,7 +180,6 @@ export default function Chatbot() {
           }}
         />
 
-        {/* Main Button */}
         <div className='relative w-14 h-14 bg-linear-to-b from-blue-600 to-zinc-700 rounded-full shadow-2xl flex items-center justify-center'>
           <AnimatePresence mode='wait'>
             {!isOpen ? (
@@ -103,7 +205,6 @@ export default function Chatbot() {
             )}
           </AnimatePresence>
 
-          {/* Notification Dot */}
           {!isOpen && (
             <motion.span
               className='absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white'
@@ -113,7 +214,6 @@ export default function Chatbot() {
           )}
         </div>
 
-        {/* Tooltip */}
         <AnimatePresence>
           {isHovered && !isOpen && (
             <motion.div
@@ -137,7 +237,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className='fixed bottom-24 right-6 w-96 h-125 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-40 flex flex-col'
+            className='fixed bottom-24 right-6 w-96 h-110 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-40 flex flex-col'
           >
             {/* Header */}
             <div className='bg-linear-to-r from-blue-600 to-blue-700 p-4 text-white shrink-0'>
@@ -160,7 +260,6 @@ export default function Chatbot() {
 
             {/* Chat Messages */}
             <div className='flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50'>
-              {/* Welcome message if no messages */}
               {messages.length === 0 && (
                 <div className='flex justify-start'>
                   <div className='bg-white rounded-2xl px-4 py-2 shadow-sm border border-gray-200'>
@@ -172,37 +271,7 @@ export default function Chatbot() {
                 </div>
               )}
 
-              {messages.map((msg, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className={`flex ${
-                    msg.role === 'user' ? 'justify-end' : 'justify-start'
-                  }`}
-                >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-2 ${
-                      msg.role === 'user'
-                        ? 'bg-linear-to-r from-blue-600 to-blue-700 text-white'
-                        : 'bg-white text-gray-800 shadow-sm border border-gray-200'
-                    }`}
-                  >
-                    <p className='text-sm whitespace-pre-wrap'>{msg.content}</p>
-                    <p
-                      className={`text-xs mt-1 ${
-                        msg.role === 'user' ? 'text-blue-100' : 'text-gray-400'
-                      }`}
-                    >
-                      {msg.timestamp.toLocaleTimeString([], {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </p>
-                  </div>
-                </motion.div>
-              ))}
+              {messages.map((msg, index) => renderMessage(msg, index))}
 
               {/* Typing Indicator */}
               {loading && (
@@ -213,33 +282,18 @@ export default function Chatbot() {
                 >
                   <div className='bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-200'>
                     <div className='flex gap-1'>
-                      <motion.div
-                        className='w-2 h-2 bg-gray-400 rounded-full'
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{
-                          duration: 0.6,
-                          repeat: Infinity,
-                          delay: 0,
-                        }}
-                      />
-                      <motion.div
-                        className='w-2 h-2 bg-gray-400 rounded-full'
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{
-                          duration: 0.6,
-                          repeat: Infinity,
-                          delay: 0.2,
-                        }}
-                      />
-                      <motion.div
-                        className='w-2 h-2 bg-gray-400 rounded-full'
-                        animate={{ y: [0, -5, 0] }}
-                        transition={{
-                          duration: 0.6,
-                          repeat: Infinity,
-                          delay: 0.4,
-                        }}
-                      />
+                      {[0, 0.2, 0.4].map((delay, i) => (
+                        <motion.div
+                          key={i}
+                          className='w-2 h-2 bg-gray-400 rounded-full'
+                          animate={{ y: [0, -5, 0] }}
+                          transition={{
+                            duration: 0.6,
+                            repeat: Infinity,
+                            delay,
+                          }}
+                        />
+                      ))}
                     </div>
                   </div>
                 </motion.div>

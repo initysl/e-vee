@@ -1,9 +1,9 @@
 import re
-from typing import List, Dict, Any
+from typing import List, Dict, Any, Tuple
 from app.embeddings.chroma_client import get_chroma_client
 from app.services.product_service import get_products
 from app.embeddings.embed_products import create_embeddings
-from app.services.cart_service import get_cart, add_to_cart
+from app.services.cart_service import get_cart, add_to_cart, remove_from_cart, update_quantity, clear_cart
 
 
 class ChatbotService:
@@ -26,10 +26,12 @@ class ChatbotService:
         # Detect intent
         intent = self._detect_intent(message_lower)
         
-        # Extract product IDs for relevant intents
+        # Extract product IDs and quantities for relevant intents
         product_ids = self._extract_product_ids(message) if any(
-            keyword in intent for keyword in ["add", "cart", "checkout", "product"]
+            keyword in intent for keyword in ["add", "remove", "cart", "checkout", "product"]
         ) else []
+        
+        quantity = self._extract_quantity(message) if "add" in intent else 1
 
         # Route to appropriate handler
         if intent == "greeting":
@@ -41,11 +43,17 @@ class ChatbotService:
         elif intent == "cart_query":
             return await self._handle_cart_query(session_id)
         
+        elif intent == "clear_cart":
+            return await self._handle_clear_cart(session_id)
+        
+        elif intent == "remove_from_cart":
+            return await self._handle_remove_from_cart(session_id, product_ids)
+        
         elif intent == "add_multiple_to_cart":
-            return await self._handle_add_multiple_to_cart(session_id, product_ids)
+            return await self._handle_add_multiple_to_cart(session_id, product_ids, quantity)
         
         elif intent == "add_and_checkout":
-            return await self._handle_add_and_checkout(session_id, product_ids)
+            return await self._handle_add_and_checkout(session_id, product_ids, quantity)
         
         elif intent == "checkout":
             return await self._handle_checkout(session_id)
@@ -66,14 +74,14 @@ class ChatbotService:
                     "response": "Please specify which product to add. For example: 'Add product 5 to cart'",
                     "intent": "add_to_cart"
                 }
-            return await self._handle_add_to_cart(session_id, product_id)
+            return await self._handle_add_to_cart(session_id, product_id, quantity)
 
         elif intent == "product_search" or intent == "shophub_info":
             return await self._handle_semantic_search(message)
         
         elif intent == "unknown":
             return {
-                "response": "I'm not sure I understand. I can help you with:\n- Finding products\n- Checking your cart\n- Checking out your cart\n- Store info (shipping, returns, about...)\n- Adding items to cart\n\nWhat would you like to do?",
+                "response": "I'm not sure I understand. I can help you with:\n- Finding products\n- Checking your cart\n- Adding/removing items\n- Checkout\n- Store info\n\nWhat would you like to do?",
                 "intent": "unknown"
             }
         
@@ -92,45 +100,52 @@ class ChatbotService:
             str: Detected intent
         """
 
-        # Greeting queries (check first for friendly responses)
+        # Greeting queries
         if any(greet in message for greet in ["hello", "hi", "hey", "good morning", "good afternoon", "good evening", "how are you"]):
             return "greeting"
+
+        # Clear/empty cart
+        if any(phrase in message for phrase in ["clear cart", "empty cart", "remove everything", "delete everything", "clear my cart"]):
+            return "clear_cart"
+
+        # Remove from cart
+        if any(phrase in message for phrase in ["remove", "delete", "take out"]) and ("cart" in message or "product" in message):
+            return "remove_from_cart"
 
         # Multi-product add to cart (check before single add)
         if ("add" in message or "put" in message) and len(self._extract_product_ids(message)) > 1:
             return "add_multiple_to_cart"
 
-        # Add to cart (check early to avoid conflicts with "cart")
+        # Add to cart
         if any(phrase in message for phrase in ["add product", "add item", "add this", "add to cart", "put in cart"]):
             return "add_to_cart"
 
-        # Checkout with products (e.g., "add 5 and 9 and checkout")
+        # Checkout with products
         if "checkout" in message and any(word in message for word in ["add", "put", "product"]):
             return "add_and_checkout"
         
-        # Checkout (check before cart_query but be specific)
-        if any(phrase in message for phrase in ["checkout", "buy now", "purchase", "place order", "pay now"]):
+        # Checkout
+        if any(phrase in message for phrase in ["checkout", "buy now", "purchase", "place order", "pay now", "proceed to checkout"]):
             return "checkout"
 
-        # Cart queries (check after checkout and add_to_cart)
-        if any(phrase in message for phrase in ["my cart", "show cart", "view cart", "cart contents", "what's in my cart", "what's in my"]) or message.strip() == "cart":
+        # Cart queries
+        if any(phrase in message for phrase in ["my cart", "show cart", "view cart", "cart contents", "what's in my cart"]) or message.strip() == "cart":
             return "cart_query"
 
         # Product by ID
         if re.search(r'product\s*(?:id|#)?\s*(\d+)', message) or re.search(r'id\s*:?\s*\d+', message):
             return "product_by_id"
 
-        # ShopHub info (shipping, returns, etc.)
-        if any(word in message for word in ["shipping", "return", "refund", "policy", "delivery", "warranty", "support", "help"]):
+        # ShopHub info
+        if any(word in message for word in ["shipping", "return", "refund", "policy", "delivery", "warranty", "support", "help", "contact"]):
             return "shophub_info"
 
-        # Before defaulting to product_search, check if message has product-related keywords
+        # Product search keywords
         product_keywords = ["product", "item", "buy", "shop", "find", "show", "looking for", "need", "want", "price", "cost", "cheap", "expensive", "available"]
     
         if any(keyword in message for keyword in product_keywords):
             return "product_search"
         
-        # If nothing matches and no product keywords, return unknown
         return "unknown"
     
     def _extract_product_ids(self, message: str) -> List[str]:
@@ -138,22 +153,17 @@ class ChatbotService:
         Extract multiple product IDs from message.
         Handles: "Add product 5, 6, and 7", "products 1 2 3", "product 5 and 9"
         """
-        # Pattern 1: "product 5, 6, and 7" or "products 5, 6, 7"
         pattern1 = r'products?\s+(\d+(?:\s*,?\s*(?:and\s+)?\d+)*)'
-        
-        # Pattern 2: Just numbers with commas/and: "5, 6, and 7"
         pattern2 = r'\b(\d+)\b'
         
         matches = re.findall(pattern1, message.lower())
         
         product_ids = []
         if matches:
-            # Extract all numbers from the matched string
             for match in matches:
                 numbers = re.findall(r'\d+', match)
                 product_ids.extend(numbers)
         else:
-            # Fallback: extract any numbers mentioned
             product_ids = re.findall(pattern2, message)
         
         # Remove duplicates while preserving order
@@ -166,29 +176,132 @@ class ChatbotService:
         
         return unique_ids
 
+    def _extract_quantity(self, message: str) -> int:
+        """
+        Extract quantity from message.
+        Handles: "add 2 of product 5", "add 5 products", "put 3 items"
+        """
+        # Pattern for "X of product" or "X products/items"
+        patterns = [
+            r'(\d+)\s+(?:of|x)\s+product',
+            r'(\d+)\s+products?',
+            r'(\d+)\s+items?',
+            r'add\s+(\d+)\s+',
+            r'put\s+(\d+)\s+',
+        ]
+        
+        for pattern in patterns:
+            match = re.search(pattern, message.lower())
+            if match:
+                quantity = int(match.group(1))
+                # Reasonable limit
+                return min(quantity, 99)
+        
+        return 1  # Default quantity
+
     async def _handle_cart_query(self, session_id: str) -> Dict[str, Any]:
         """Handle cart query intent."""
         cart = await get_cart(session_id)
 
         if cart['item_count'] == 0:
             return {
-                "response": "Your cart is currently empty. Would you like to add some products?",
+                "response": "Your cart is currently empty. Browse our products and add items you like!",
                 "intent": "cart_query",
-                "cart": cart
+                "cart": cart,
+                "action": "browse_products"
             }
         else:
             items_list = "\n".join([
                 f"- {item['title']} (x{item['quantity']}): ${item['subtotal']:.2f}" 
                 for item in cart['items']])
             
-            response_text = f"Here's what's in your cart:\n\n{items_list}\n\nTotal: ${cart['total']:.2f}\n\nReady to checkout?"
+            response_text = (
+                f"Here's what's in your cart:\n\n{items_list}\n\n"
+                f"Total: ${cart['total']:.2f}\n\n"
+                f"Ready to checkout?"
+            )
             return {
                 "response": response_text,
                 "intent": "cart_query",
+                "cart": cart,
+                "action": "show_checkout_button"
+            }
+    
+    async def _handle_clear_cart(self, session_id: str) -> Dict[str, Any]:
+        """Handle clearing the entire cart."""
+        cart = await get_cart(session_id)
+        
+        if cart['item_count'] == 0:
+            return {
+                "response": "Your cart is already empty.",
+                "intent": "clear_cart",
                 "cart": cart
             }
         
-    async def _handle_add_multiple_to_cart(self, session_id: str, product_ids: List[str]) -> Dict[str, Any]:
+        await clear_cart(session_id)
+        updated_cart = await get_cart(session_id)
+        
+        return {
+            "response": "Your cart has been cleared successfully.",
+            "intent": "clear_cart",
+            "cart": updated_cart,
+            "action": "browse_products"
+        }
+    
+    async def _handle_remove_from_cart(self, session_id: str, product_ids: List[str]) -> Dict[str, Any]:
+        """Handle removing products from cart."""
+        if not product_ids:
+            return {
+                "response": "Please specify which product to remove. For example: 'Remove product 5 from cart'",
+                "intent": "remove_from_cart"
+            }
+        
+        products = await get_products()
+        removed_products = []
+        failed_products = []
+        
+        for product_id in product_ids:
+            product = next((p for p in products if str(p['id']) == product_id), None)
+            
+            if not product:
+                failed_products.append(product_id)
+                continue
+            
+            try:
+                await remove_from_cart(session_id, product_id)
+                removed_products.append(product)
+            except Exception as e:
+                print(f"Failed to remove product {product_id}: {e}")
+                failed_products.append(product_id)
+        
+        cart = await get_cart(session_id)
+        
+        if not removed_products:
+            return {
+                "response": f"Could not remove products: {', '.join(failed_products)}. They may not be in your cart.",
+                "intent": "remove_from_cart",
+                "cart": cart
+            }
+        
+        removed_names = [p['title'] for p in removed_products]
+        response_parts = [
+            f"Removed {len(removed_products)} item(s) from your cart:",
+            *[f"• {name}" for name in removed_names]
+        ]
+        
+        if failed_products:
+            response_parts.append(f"\nCould not remove: {', '.join(failed_products)}")
+        
+        response_parts.append(f"\nYour cart now has {cart['item_count']} items totaling ${cart['total']:.2f}")
+        
+        return {
+            "response": "\n".join(response_parts),
+            "intent": "remove_from_cart",
+            "cart": cart,
+            "removed_products": removed_products
+        }
+        
+    async def _handle_add_multiple_to_cart(self, session_id: str, product_ids: List[str], quantity: int = 1) -> Dict[str, Any]:
         """Handle adding multiple products to cart in one request."""
         if not product_ids:
             return {
@@ -200,7 +313,6 @@ class ChatbotService:
         added_products = []
         failed_products = []
         
-        # Try to add each product
         for product_id in product_ids:
             product = next((p for p in products if str(p['id']) == product_id), None)
             
@@ -209,73 +321,67 @@ class ChatbotService:
                 continue
             
             try:
-                await add_to_cart(session_id, product_id, quantity=1)
+                await add_to_cart(session_id, product_id, quantity=quantity)
                 added_products.append(product)
             except Exception as e:
                 print(f"Failed to add product {product_id}: {e}")
                 failed_products.append(product_id)
         
-        # Get updated cart
         cart = await get_cart(session_id)
         
-        # Build response message
         if not added_products:
             return {
-                "response": f"Sorry, I couldn't add any of the products. Product IDs {', '.join(failed_products)} were not found.",
+                "response": f"Sorry, I couldn't add any products. IDs {', '.join(failed_products)} were not found.",
                 "intent": "add_multiple_to_cart"
             }
         
         added_names = [p['title'] for p in added_products]
         response_parts = [
-            f"Successfully added {len(added_products)} items to your cart:",
-            *[f"• {name}" for name in added_names]
+            f"Added {len(added_products)} item(s) to your cart:",
+            *[f"• {name} (x{quantity})" for name in added_names]
         ]
         
         if failed_products:
-            response_parts.append(f"\nCould not find products: {', '.join(failed_products)}")
+            response_parts.append(f"\nCould not find: {', '.join(failed_products)}")
         
-        response_parts.append(f"\nYour cart now has {cart['item_count']} items totaling ${cart['total']:.2f}")
+        response_parts.append(f"\nCart total: {cart['item_count']} items - ${cart['total']:.2f}")
         
         return {
             "response": "\n".join(response_parts),
             "intent": "add_multiple_to_cart",
             "cart": cart,
             "added_products": added_products,
-            "failed_products": failed_products
+            "action": "show_cart_button"
         }
 
-    async def _handle_add_and_checkout(self, session_id: str, product_ids: List[str]) -> Dict[str, Any]:
+    async def _handle_add_and_checkout(self, session_id: str, product_ids: List[str], quantity: int = 1) -> Dict[str, Any]:
         """Handle adding products and immediately checking out."""
         if not product_ids:
             return {
-                "response": "Please specify which products to add and checkout. For example: 'Add products 5 and 9 and checkout'",
+                "response": "Please specify which products to add. For example: 'Add product 5 and checkout'",
                 "intent": "add_and_checkout"
             }
         
-        # First, add products to cart
-        add_result = await self._handle_add_multiple_to_cart(session_id, product_ids)
+        add_result = await self._handle_add_multiple_to_cart(session_id, product_ids, quantity)
         
-        # If adding failed completely, return the error
         if not add_result.get('added_products'):
             return add_result
         
-        # Get cart for checkout
         cart = await get_cart(session_id)
         
         if cart['item_count'] == 0:
             return {
-                "response": "Your cart is empty. Please add items before checking out.",
+                "response": "Your cart is empty. Add items first.",
                 "intent": "add_and_checkout"
             }
         
-        # Build checkout response
         added_count = len(add_result['added_products'])
         response = (
-            f"Added {added_count} items to your cart!\n\n"
+            f"Added {added_count} item(s) to cart!\n\n"
             f"Ready to checkout:\n"
-            f"Total Items: {cart['item_count']}\n"
-            f"Total Amount: ${cart['total']:.2f}\n\n"
-            f"To complete your purchase, please proceed to the checkout page where you can enter your shipping and payment details."
+            f"Items: {cart['item_count']}\n"
+            f"Total: ${cart['total']:.2f}\n\n"
+            f"Click the button below to proceed to checkout."
         )
         
         return {
@@ -283,7 +389,8 @@ class ChatbotService:
             "intent": "add_and_checkout",
             "cart": cart,
             "checkout_ready": True,
-            "added_products": add_result['added_products']
+            "added_products": add_result['added_products'],
+            "action": "redirect_to_checkout"
         }
         
     async def _handle_checkout(self, session_id: str) -> Dict[str, Any]:
@@ -292,23 +399,30 @@ class ChatbotService:
 
         if cart['item_count'] == 0:
             return {
-                "response": "Your cart is empty. Add some products before checking out!",
+                "response": "Your cart is empty. Add products before checking out!",
                 "intent": "checkout",
-                "cart": cart
+                "cart": cart,
+                "action": "browse_products"
             }
 
         return {
-            "response": f"Great! Your order total is ${cart['total']:.2f} for {cart['item_count']} items. To complete checkout, please proceed to our checkout page where you can enter shipping and payment details.",
+            "response": (
+                f"Ready to checkout!\n\n"
+                f"Items: {cart['item_count']}\n"
+                f"Total: ${cart['total']:.2f}\n\n"
+                f"Click the button below to enter shipping and payment details."
+            ),
             "intent": "checkout",
             "cart": cart,
-            "checkout_ready": True
+            "checkout_ready": True,
+            "action": "redirect_to_checkout"
         }
     
     async def _handle_product_by_id(self, session_id: str, product_id: str) -> Dict[str, Any]:
         """Handle requests for specific product by ID."""
         if not product_id:
             return {
-                "response": "Please provide a valid product ID. For example: 'Tell me about product 5'",
+                "response": "Please provide a valid product ID.",
                 "intent": "product_by_id"
             }
         
@@ -317,40 +431,52 @@ class ChatbotService:
 
         if not product:
             return {
-                "response": f"Sorry, I couldn't find a product with ID {product_id}. Please check the ID and try again.",
+                "response": f"Product ID {product_id} not found.",
                 "intent": "product_by_id"
             }
         
         return {
-            "response": f"{product['title']}\n\nPrice: ${product['price']}\nCategory: {product['category']}\n\n{product['description']}\n\nWould you like to add this to your cart?",
+            "response": (
+                f"{product['title']}\n\n"
+                f"${product['price']}\n"
+                f"{product['category']}\n\n"
+                f"{product['description']}\n\n"
+                f"Add to cart?"
+            ),
             "intent": "product_by_id",
-            "product": product
+            "product": product,
+            "action": "show_add_to_cart_button"
         }
     
-    async def _handle_add_to_cart(self, session_id: str, product_id: str) -> Dict[str, Any]:
+    async def _handle_add_to_cart(self, session_id: str, product_id: str, quantity: int = 1) -> Dict[str, Any]:
         """Handle adding product to cart."""
         if not product_id:
             return {
-                "response": "Please specify which product to add. For example: 'Add product 5 to cart'",
+                "response": "Please specify which product to add.",
                 "intent": "add_to_cart"
             }
         
         try:
-            cart = await add_to_cart(session_id, product_id)
+            cart = await add_to_cart(session_id, product_id, quantity)
             products = await get_products()
             product = next((p for p in products if str(p['id']) == product_id), None)
             
             if not product:
                 return {
-                    "response": f"Sorry, I couldn't find a product with ID {product_id}. Please check the ID and try again.",
+                    "response": f"Product ID {product_id} not found.",
                     "intent": "add_to_cart"
                 }
             
+            qty_text = f" (x{quantity})" if quantity > 1 else ""
             return {
-                "response": f"Added {product['title']} to your cart! You now have {cart['item_count']} items totaling ${cart['total']:.2f}.",
+                "response": (
+                    f"✅ Added {product['title']}{qty_text} to cart!\n\n"
+                    f"Cart: {cart['item_count']} items - ${cart['total']:.2f}"
+                ),
                 "intent": "add_to_cart",
                 "cart": cart,
-                "product": product
+                "product": product,
+                "action": "show_cart_button"
             }
         except ValueError as e:
             return {
@@ -360,30 +486,25 @@ class ChatbotService:
     
     async def _handle_semantic_search(self, query: str) -> Dict[str, Any]:
         """Handle product search and platform info queries using ChromaDB."""
-        # Generate query embedding
         query_embedding = create_embeddings([query])[0]
         
-        # Search in ChromaDB
         results = self.collection.query(
             query_embeddings=[query_embedding],
             n_results=3
         )
         
-        # Safety checks for empty results
-        if not results or not results.get('documents') or not isinstance(results['documents'], list) or not results['documents'][0]:
+        if not results or not results.get('documents') or not results['documents'][0]: # type: ignore
             return {
-                "response": "I couldn't find relevant information. Could you rephrase your question?",
+                "response": "I couldn't find relevant information. Could you rephrase?",
                 "intent": "product_search"
             }
         
-        # Check if metadatas exist
         if not results.get('metadatas') or not results['metadatas'][0]: # type: ignore
             return {
-                "response": "I found some results but couldn't retrieve the details. Please try again.",
+                "response": "Found results but couldn't retrieve details. Try again.",
                 "intent": "product_search"
             }
         
-        # Format results
         response_parts = []
         products_found = []
         
@@ -392,8 +513,7 @@ class ChatbotService:
                 products_found.append(metadata)
                 response_parts.append(
                     f"{i+1}. {metadata['title']} - ${metadata['price']}\n"
-                    f"   Category: {metadata['category']}\n"
-                    f"   Product ID: {metadata['product_id']}"
+                    f"   {metadata['category']} | ID: {metadata['product_id']}"
                 )
             elif metadata['type'] == 'hub_info':
                 if metadata.get('content_type') == 'faq':
@@ -404,12 +524,13 @@ class ChatbotService:
         response_text = "\n\n".join(response_parts)
         
         if products_found:
-            response_text += "\n\nWould you like to know more about any of these products or add one to your cart?"
+            response_text += "\n\nWant to add any to your cart?"
         
         return {
             "response": response_text,
             "intent": "product_search" if products_found else "hub_info",
-            "results": products_found if products_found else results['metadatas'][0] # type: ignore
+            "results": products_found if products_found else results['metadatas'][0], # type: ignore
+            "action": "show_product_buttons" if products_found else None
         }
 
 
