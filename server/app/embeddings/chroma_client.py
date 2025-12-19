@@ -70,7 +70,7 @@ def search_similar(query_embedding: list, n_results: int = 5, filter_dict: dict 
 
 def reset_collection():
     """
-    Delete and recreate the collection (useful for testing).
+    Delete and recreate the collection (for testing).
     """
     global _collection
     
@@ -90,7 +90,6 @@ def reset_collection():
 def get_collection_count():
     """
     Get the number of items in the collection.
-    
     Returns:
         int: Number of items stored
     """

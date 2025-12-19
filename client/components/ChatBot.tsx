@@ -1,7 +1,8 @@
 'use client';
 
 import { RiRobot3Line } from 'react-icons/ri';
-import { X, Send, Loader2, ShoppingCart, ExternalLink } from 'lucide-react';
+import { X, Send, Loader2, ExternalLink } from 'lucide-react';
+import { MdAddShoppingCart } from 'react-icons/md';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -115,8 +116,8 @@ export default function Chatbot() {
                 onClick={() => handleAction(msg.action)}
                 className='text-xs bg-blue-600 hover:bg-blue-700'
               >
-                <ShoppingCart className='w-3 h-3 mr-1' />
-                Go to Checkout
+                <MdAddShoppingCart className='w-3 h-3 mr-1' />
+                Checkout
               </Button>
             )}
             {msg.action === 'show_cart_button' && (
@@ -126,8 +127,8 @@ export default function Chatbot() {
                 onClick={() => handleAction(msg.action)}
                 className='text-xs'
               >
-                <ShoppingCart className='w-3 h-3 mr-1' />
-                View Cart
+                <MdAddShoppingCart className='w-3 h-3 mr-1' />
+                Cart
               </Button>
             )}
             {msg.action === 'browse_products' && (
@@ -138,7 +139,7 @@ export default function Chatbot() {
                 className='text-xs'
               >
                 <ExternalLink className='w-3 h-3 mr-1' />
-                Browse Products
+                Market
               </Button>
             )}
             {msg.action === 'show_checkout_button' && (

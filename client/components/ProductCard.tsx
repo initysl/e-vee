@@ -5,7 +5,8 @@ import Link from 'next/link';
 import { useState } from 'react';
 import { Product } from '@/types/product';
 import { Button } from '@/components/ui/button';
-import { ShoppingCart, Heart, Plus, Minus, Star } from 'lucide-react';
+import { Heart, Plus, Minus } from 'lucide-react';
+import { MdAddShoppingCart } from 'react-icons/md';
 import { useCart } from '@/context/CartContext';
 import { IoStar } from 'react-icons/io5';
 
@@ -48,7 +49,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className='group relative h-full hover:shadow-xl hover:rounded-2xl transition-all duration-300'>
         <div className='p-4'>
           {/* Image */}
-          <div className='relative w-full h-48 mb-4 rounded-2xl bg-gradient-to-br from-blue-100 to-purple-100 overflow-hidden'>
+          <div className='relative w-full h-48 mb-4 rounded-2xl bg-linear-to-br from-blue-100 to-purple-100 overflow-hidden'>
             <Image
               src={product.image}
               alt={product.title}
@@ -110,7 +111,7 @@ export default function ProductCard({ product }: ProductCardProps) {
                 disabled={loading}
                 className='rounded-full px-4'
               >
-                <ShoppingCart className='w-4 h-4 mr-1' />
+                <MdAddShoppingCart className='w-4 h-4 mr-1' />
                 Add
               </Button>
             ) : (

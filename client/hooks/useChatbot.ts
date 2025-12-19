@@ -56,25 +56,28 @@ export const useChatbot = () => {
       try {
         const response = await chatbotApi.chat(userMessage);
 
+        // Extract action from response or metadata
+        const action = response.action || response.metadata?.action;
+
         // Add assistant response to chat
         const assistantMessage: ChatMessage = {
           role: 'assistant',
           content: response.response,
           timestamp: new Date(),
           intent: response.intent,
-          action: response.action,
+          action: action,
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
 
         // Refresh cart if action involves cart operations
         if (
-          response.action &&
+          action &&
           [
             'show_cart_button',
             'redirect_to_checkout',
             'show_checkout_button',
-          ].includes(response.action)
+          ].includes(action)
         ) {
           await refreshCart();
         }
