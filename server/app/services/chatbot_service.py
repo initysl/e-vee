@@ -531,7 +531,7 @@ class ChatbotService:
             # Check if results exist
             if not results or not results.get("metadatas") or not results["metadatas"][0]: # type: ignore
                 return {
-                    "response": f"I couldn't find information about {topic}. Try asking about shipping, returns, refunds, or support.",
+                    "response": f"I couldn't find information about {topic}. Try asking about policy, delivery, contact, returns, refunds.... or support.",
                     "intent": "hub_info",
                     "topic": topic
                 }
