@@ -11,12 +11,12 @@ class ChatbotService:
 
     # ShopHub topic keywords mapping
     SHOPHUB_TOPICS = {
-        "shipping": ["shipping", "ship"],
+        "shipping": ["shipping details", "ship"],
         "returns": ["return", "returns"],
-        "customer_service": ["support", "help", "customer service"],
         "refund": ["refund", "refunds"],
         "delivery": ["delivery", "deliver"],
         "warranty": ["warranty", "guarantee"],
+        "support": ["support", "help","customer service", "service"],
         "contact": ["contact"],
         "policy": ["policy", "policies", "terms"],
     }
