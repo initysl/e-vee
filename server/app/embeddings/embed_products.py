@@ -12,24 +12,24 @@ from huggingface_hub import InferenceClient
 client = InferenceClient(token=os.getenv("HUGGINGFACEHUB_API_KEY"))
 
 def create_embeddings(texts: List[str]) -> List[List[float]]:
-  """Generate embeddings using HuggingFace Inference API"""
-  embeddings = []
+    """Generate embeddings using HuggingFace Inference API"""
+    embeddings = []
 
-  for text in texts:
-      response = client.feature_extraction(
-          text=text,
-          model="sentence-transformers/all-MiniLM-L6-v2"
-      )
-      # HuggingFace returns shape (sequence_length, embedding_dim)
-      # We need mean pooling to get single vector per text
-      if isinstance(response[0], list):
-           # Mean pooling across sequence
-          embedding = [sum(col)/len(col) for col in zip(*response)]
-      else:
-          embedding = response
-          embeddings.append(embedding)
+    for text in texts:
+        response = client.feature_extraction(
+            text=text,
+            model="sentence-transformers/all-MiniLM-L6-v2"
+        )
+        # HuggingFace returns shape (sequence_length, embedding_dim)
+        # We need mean pooling to get single vector per text
+        if isinstance(response[0], list):
+            # Mean pooling across sequence
+            embedding = [sum(col)/len(col) for col in zip(*response)]
+        else:
+            embedding = response
+        embeddings.append(embedding)
    
-  return embeddings
+    return embeddings
 
 def create_product_document(product: Dict[str, Any]) -> str:
     """
@@ -96,7 +96,7 @@ async def embed_and_store_products():
 
         ids.append(f"product_{product_id}")
 
-    # Embed SHOPHUB_INFO (OUTSIDE the product loop!)
+    # Embed SHOPHUB_INFO description
     documents.append(SHOPHUB_INFO['description'])
     metadatas.append({
         'type': 'hub_info',
@@ -105,19 +105,21 @@ async def embed_and_store_products():
     })
     ids.append("hub_info_description")
 
-    # Embed each FAQ
-    for idx, faq in enumerate(SHOPHUB_INFO['faqs']):
-        faq_text = f"Q: {faq['question']} A: {faq['answer']}"
+    # Embed each FAQ from the dict structure
+    faqs_dict = SHOPHUB_INFO['faqs']
+    for topic, faq_data in faqs_dict.items():
+        # Create searchable text from FAQ
+        faq_text = f"Topic: {topic}. {faq_data['title']}. {faq_data['content']}"
         documents.append(faq_text)
 
         metadatas.append({
             'type': 'hub_info',
-            'topic': faq['topic'],
-            'question': faq['question'],
-            'answer': faq['answer'],
+            'topic': topic,
+            'title': faq_data['title'],
+            'answer': faq_data['content'],  # Store content as answer
             'content_type': 'faq'
         })
-        ids.append(f"hub_info_faq_{idx}")
+        ids.append(f"hub_info_faq_{topic}")
 
     # Generate embeddings using HuggingFace API
     print(f"Generating embeddings for {len(documents)} documents (products + shophub info)...")
@@ -131,7 +133,7 @@ async def embed_and_store_products():
         ids=ids
     )
     
-    print(f"Successfully embedded and stored {len(products)} products and {len(SHOPHUB_INFO['faqs']) + 1} shophub documents in ChromaDB")
+    print(f"Successfully embedded and stored {len(products)} products and {len(faqs_dict) + 1} shophub documents in ChromaDB")
 
 async def refresh_embedddings():
     """
@@ -139,6 +141,6 @@ async def refresh_embedddings():
     """
     clear_cache()
 
-    # Re-embed products and sttore
+    # Re-embed products and store
     await embed_and_store_products()
     print("Product embeddings refreshed successfully.")

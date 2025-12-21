@@ -1,8 +1,9 @@
 'use client';
 
-import { RiRobot3Line } from 'react-icons/ri';
-import { X, Send, Loader2, ExternalLink } from 'lucide-react';
+import { RiRobot3Line, RiShoppingBag2Line } from 'react-icons/ri';
+import { X, Send, Loader2 } from 'lucide-react';
 import { MdAddShoppingCart } from 'react-icons/md';
+import { GiTakeMyMoney } from 'react-icons/gi';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -88,7 +89,7 @@ export default function Chatbot() {
         }`}
       >
         <div
-          className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+          className={`max-w-[min(80%,42rem)] rounded-2xl px-4 py-2 break-words whitespace-pre-wrap leading-relaxed ${
             isUser
               ? 'bg-linear-to-r from-blue-600 to-blue-700 text-white'
               : 'bg-white text-gray-800 shadow-sm border border-gray-200'
@@ -116,8 +117,8 @@ export default function Chatbot() {
                 onClick={() => handleAction(msg.action)}
                 className='text-xs bg-blue-600 hover:bg-blue-700'
               >
-                <MdAddShoppingCart className='w-3 h-3 mr-1' />
                 Checkout
+                <MdAddShoppingCart className='size={16}' />
               </Button>
             )}
             {msg.action === 'show_cart_button' && (
@@ -127,8 +128,8 @@ export default function Chatbot() {
                 onClick={() => handleAction(msg.action)}
                 className='text-xs'
               >
-                <MdAddShoppingCart className='w-3 h-3 mr-1' />
                 Cart
+                <MdAddShoppingCart className='size={16}' />
               </Button>
             )}
             {msg.action === 'browse_products' && (
@@ -138,17 +139,18 @@ export default function Chatbot() {
                 onClick={() => handleAction(msg.action)}
                 className='text-xs'
               >
-                <ExternalLink className='w-3 h-3 mr-1' />
                 Market
+                <RiShoppingBag2Line className='size={16}' />
               </Button>
             )}
             {msg.action === 'show_checkout_button' && (
               <Button
                 size='sm'
                 onClick={() => handleAction(msg.action)}
-                className='text-xs bg-green-600 hover:bg-green-700'
+                className='text-xs bg-blue-700 hover:bg-blue-600'
               >
-                Proceed to Checkout
+                Checkout
+                <GiTakeMyMoney className='size={16} ' />
               </Button>
             )}
           </div>
@@ -181,14 +183,14 @@ export default function Chatbot() {
           }}
         />
 
-        <div className='relative w-14 h-14 bg-linear-to-b from-blue-600 to-zinc-700 rounded-full shadow-2xl flex items-center justify-center'>
+        <div className='relative w-14 h-14 bg-linear-to-b from-blue-600 to-zinc-700 opacity-60 rounded-full shadow-2xl flex items-center justify-center'>
           <AnimatePresence mode='wait'>
             {!isOpen ? (
               <motion.div
                 key='robot'
-                initial={{ rotate: -180, opacity: 0 }}
+                initial={{ rotate: -45, opacity: 0 }}
                 animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 180, opacity: 0 }}
+                exit={{ rotate: 45, opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
                 <RiRobot3Line size={28} className='text-white' />
@@ -196,9 +198,9 @@ export default function Chatbot() {
             ) : (
               <motion.div
                 key='close'
-                initial={{ rotate: -180, opacity: 0 }}
+                initial={{ rotate: -45, opacity: 0 }}
                 animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 180, opacity: 0 }}
+                exit={{ rotate: 45, opacity: 0 }}
                 transition={{ duration: 0.3 }}
               >
                 <X size={28} className='text-white' />
@@ -238,7 +240,7 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className='fixed bottom-24 right-6 w-96 h-110 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-40 flex flex-col'
+            className='fixed bottom-24 right-6 w-82 sm:w-96 h-110 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50 flex flex-col'
           >
             {/* Header */}
             <div className='bg-linear-to-r from-blue-600 to-blue-700 p-4 text-white shrink-0'>
@@ -314,6 +316,7 @@ export default function Chatbot() {
                   onKeyDown={handleKeyPress}
                   placeholder='Type your message...'
                   disabled={loading}
+                  maxLength={50}
                   className='flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 text-sm'
                 />
                 <Button

@@ -1,5 +1,5 @@
 import re
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any, Optional
 from app.embeddings.chroma_client import get_chroma_client
 from app.services.product_service import get_products
 from app.embeddings.embed_products import create_embeddings
@@ -9,9 +9,29 @@ from app.services.cart_service import get_cart, add_to_cart, remove_from_cart, u
 class ChatbotService:
     """Chatbot responses based on user queries"""
 
+    # ShopHub topic keywords mapping
+    SHOPHUB_TOPICS = {
+        "shipping": ["shipping", "ship"],
+        "returns": ["return", "returns"],
+        "customer_service": ["support", "help", "customer service"],
+        "refund": ["refund", "refunds"],
+        "delivery": ["delivery", "deliver"],
+        "warranty": ["warranty", "guarantee"],
+        "contact": ["contact"],
+        "policy": ["policy", "policies", "terms"],
+    }
+
     def __init__(self):
         self.collection = get_chroma_client()
 
+    def _detect_shophub_topic(self, message: str) -> Optional[str]:
+        """Detect ShopHub topic from message keywords."""
+        message_lower = message.lower()
+        for topic, keywords in self.SHOPHUB_TOPICS.items():
+            if any(keyword in message_lower for keyword in keywords):
+                return topic
+        return None
+    
     async def process_message(self, message: str, session_id: str) -> Dict[str, Any]:
         """
         Process user message and return appropriate response.
@@ -76,7 +96,18 @@ class ChatbotService:
                 }
             return await self._handle_add_to_cart(session_id, product_id, quantity)
 
-        elif intent == "product_search" or intent == "shophub_info":
+        elif intent == "shophub_info":
+            topic = self._detect_shophub_topic(message_lower)
+            
+            if topic is None:
+                return {
+                    "response": "Could you clarify what information you need? I can help with shipping, returns, refunds, policies, or support.",
+                    "intent": "shophub_info"
+                }
+            
+            return await self._handle_shophub_info(message, topic)
+
+        elif intent == "product_search":
             return await self._handle_semantic_search(message)
         
         elif intent == "unknown":
@@ -136,13 +167,13 @@ class ChatbotService:
         if re.search(r'product\s*(?:id|#)?\s*(\d+)', message) or re.search(r'id\s*:?\s*\d+', message):
             return "product_by_id"
 
-        # ShopHub info
-        if any(word in message for word in ["shipping", "return", "refund", "policy", "delivery", "warranty", "support", "help", "contact"]):
+        # ShopHub info - check before product search
+        if self._detect_shophub_topic(message):
             return "shophub_info"
-
+        
         # Product search keywords
         product_keywords = ["product", "item", "buy", "shop", "find", "show", "looking for", "need", "want", "price", "cost", "cheap", "expensive", "available"]
-    
+        
         if any(keyword in message for keyword in product_keywords):
             return "product_search"
         
@@ -181,7 +212,6 @@ class ChatbotService:
         Extract quantity from message.
         Handles: "add 2 of product 5", "add 5 products", "put 3 items"
         """
-        # Pattern for "X of product" or "X products/items"
         patterns = [
             r'(\d+)\s+(?:of|x)\s+product',
             r'(\d+)\s+products?',
@@ -194,10 +224,9 @@ class ChatbotService:
             match = re.search(pattern, message.lower())
             if match:
                 quantity = int(match.group(1))
-                # Reasonable limit
                 return min(quantity, 99)
         
-        return 1  # Default quantity
+        return 1
 
     async def _handle_cart_query(self, session_id: str) -> Dict[str, Any]:
         """Handle cart query intent."""
@@ -441,7 +470,7 @@ class ChatbotService:
                 f"${product['price']}\n"
                 f"{product['category']}\n\n"
                 f"{product['description']}\n\n"
-                f"Add to cart?"
+                f"Add product {product_id} to cart?"
             ),
             "intent": "product_by_id",
             "product": product,
@@ -470,7 +499,7 @@ class ChatbotService:
             qty_text = f" (x{quantity})" if quantity > 1 else ""
             return {
                 "response": (
-                    f"✅ Added {product['title']}{qty_text} to cart!\n\n"
+                    f"Added {product['title']}{qty_text} to cart!\n\n"
                     f"Cart: {cart['item_count']} items - ${cart['total']:.2f}"
                 ),
                 "intent": "add_to_cart",
@@ -484,54 +513,85 @@ class ChatbotService:
                 "intent": "add_to_cart"
             }
     
+    async def _handle_shophub_info(self, query: str, topic: str) -> Dict[str, Any]:
+        """Handle ShopHub info queries using ChromaDB filtering."""
+        try:
+            # Query ChromaDB with proper where clause using $and operator
+            results = self.collection.query(
+                query_embeddings=[create_embeddings([query])[0]],
+                n_results=3,
+                where={
+                    "$and": [
+                        {"type": {"$eq": "hub_info"}},
+                        {"topic": {"$eq": topic}}
+                    ]
+                }
+            )
+
+            # Check if results exist
+            if not results or not results.get("metadatas") or not results["metadatas"][0]: # type: ignore
+                return {
+                    "response": f"I couldn't find information about {topic}. Try asking about shipping, returns, refunds, or support.",
+                    "intent": "hub_info",
+                    "topic": topic
+                }
+
+            # Extract metadata
+            metadata = results["metadatas"][0][0] # type: ignore
+            
+            # Get title and answer from metadata
+            title = metadata.get("title", topic.capitalize())
+            answer = metadata.get("answer", "Information not available.")
+
+            return {
+                "response": f"{title}\n\n{answer}",
+                "intent": "hub_info",
+                "topic": topic
+            }
+        
+        except Exception as e:
+            print(f"Error in _handle_shophub_info: {e}")
+            return {
+                "response": "Sorry, I encountered an error retrieving that information. Please try again.",
+                "intent": "hub_info",
+                "topic": topic
+            }
+    
     async def _handle_semantic_search(self, query: str) -> Dict[str, Any]:
-        """Handle product search and platform info queries using ChromaDB."""
-        query_embedding = create_embeddings([query])[0]
-        
-        results = self.collection.query(
-            query_embeddings=[query_embedding],
-            n_results=3
-        )
-        
-        if not results or not results.get('documents') or not results['documents'][0]: # type: ignore
-            return {
-                "response": "I couldn't find relevant information. Could you rephrase?",
-                "intent": "product_search"
-            }
-        
-        if not results.get('metadatas') or not results['metadatas'][0]: # type: ignore
-            return {
-                "response": "Found results but couldn't retrieve details. Try again.",
-                "intent": "product_search"
-            }
-        
-        response_parts = []
-        products_found = []
-        
-        for i, (doc, metadata) in enumerate(zip(results['documents'][0], results['metadatas'][0])): # type: ignore
-            if metadata['type'] == 'product':
-                products_found.append(metadata)
+        """Handle product search using ChromaDB."""
+        try:
+            query_embedding = create_embeddings([query])[0]
+            
+            results = self.collection.query(
+                query_embeddings=[query_embedding],
+                n_results=3,
+                where={"type": {"$eq": "product"}}
+            )
+            
+            if not results or not results.get("metadatas") or not results["metadatas"][0]: # type: ignore
+                return {
+                    "response": "I couldn't find relevant products. Could you rephrase your search?",
+                    "intent": "product_search"
+                }
+            
+            response_parts = []
+            for i, meta in enumerate(results["metadatas"][0]): # type: ignore
                 response_parts.append(
-                    f"{i+1}. {metadata['title']} - ${metadata['price']}\n"
-                    f"   {metadata['category']} | ID: {metadata['product_id']}"
+                    f"{i+1}. {meta['title']} - ${meta['price']} | ID: {meta['product_id']}"
                 )
-            elif metadata['type'] == 'hub_info':
-                if metadata.get('content_type') == 'faq':
-                    response_parts.append(f"{metadata['question']}\n{metadata['answer']}")
-                else:
-                    response_parts.append(doc.strip())
+
+            return {
+                "response": "\n".join(response_parts) + "\n\nAdd any to cart?",
+                "intent": "product_search",
+                "action": "show_product_buttons"
+            }
         
-        response_text = "\n\n".join(response_parts)
-        
-        if products_found:
-            response_text += "\n\nWant to add any to your cart?"
-        
-        return {
-            "response": response_text,
-            "intent": "product_search" if products_found else "hub_info",
-            "results": products_found if products_found else results['metadatas'][0], # type: ignore
-            "action": "show_product_buttons" if products_found else None
-        }
+        except Exception as e:
+            print(f"Error in _handle_semantic_search: {e}")
+            return {
+                "response": "Sorry, I encountered an error searching for products. Please try again.",
+                "intent": "product_search"
+            }
 
 
 # Singleton instance

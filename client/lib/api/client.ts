@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from 'axios';
-import { getSession } from '@/lib/session';
+import { clearSession, getSession } from '@/lib/session';
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
@@ -14,14 +14,8 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: false,
 });
 
-// Use getSession from session.ts
 export const getSessionId = getSession;
-
-export const clearSessionId = (): void => {
-  if (typeof window !== 'undefined') {
-    localStorage.removeItem('shophub_session_id');
-  }
-};
+export const clearSessionId = clearSession;
 
 // Request interceptor
 apiClient.interceptors.request.use(

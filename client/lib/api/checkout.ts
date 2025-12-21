@@ -22,14 +22,28 @@ export const checkoutApi = {
   // Process checkout and place order
   process: async (checkoutData: CheckoutRequest): Promise<CheckoutResponse> => {
     try {
+      console.log('[Checkout API] Sending request:', checkoutData);
+
       const response = await apiClient.post<CheckoutResponse>(
-        '/checkout',
+        '/checkout/process', // Fixed: added /process
         checkoutData
       );
+
+      console.log('[Checkout API] Response:', response.data);
       return response.data;
-    } catch (error) {
-      console.error('Error processing checkout:', error);
-      throw error;
+    } catch (error: any) {
+      console.error('[Checkout API] Error:', error);
+
+      // Extract meaningful error message
+      let errorMessage = 'Failed to process checkout';
+
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.message) {
+        errorMessage = error.message;
+      }
+
+      throw new Error(errorMessage);
     }
   },
 
@@ -43,6 +57,10 @@ export const checkoutApi = {
 
     if (!data.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email)) {
       errors.push('Valid email is required');
+    }
+
+    if (!data.phone || data.phone.trim().length < 10) {
+      errors.push('Valid phone number is required (minimum 10 digits)');
     }
 
     if (!data.shipping_address || data.shipping_address.trim().length < 10) {

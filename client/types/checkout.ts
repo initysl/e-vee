@@ -1,18 +1,17 @@
 import { CartItem } from './cart';
 
 export interface CheckoutRequest {
+  email: string;
+  phone: string;
   shipping_address: string;
   payment_method: string;
-  email: string;
-  phone?: string;
 }
 
 export interface CheckoutResponse {
   order_id: string;
   total: number;
-  status: string;
   message: string;
-  items: CartItem[];
+  estimated_delivery: string;
 }
 
 export interface CheckoutSummary {

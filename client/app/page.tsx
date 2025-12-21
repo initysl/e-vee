@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { v4 as uuidv4 } from 'uuid';
-import { createSession } from '@/lib/session'; // Import the utility
+import { createSession, getSession } from '@/lib/session'; // Import the utility
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
 
@@ -10,12 +10,15 @@ export default function Home() {
   const router = useRouter();
 
   const handleGetStarted = () => {
-    // Generate session ID
-    const sessionId = uuidv4();
-    // Use the utility function for consistency
-    createSession(sessionId);
-    console.log('Session created:', sessionId);
-    // Navigate to market
+    let sessionId = getSession();
+    if (!sessionId) {
+      sessionId = uuidv4();
+      createSession(sessionId);
+      console.log('New session created:', sessionId);
+    } else {
+      console.log('Using existing session:', sessionId);
+    }
+
     router.push('/market');
   };
 

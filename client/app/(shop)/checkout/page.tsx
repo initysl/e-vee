@@ -16,12 +16,13 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { CheckCircle2, ArrowLeft, Loader2 } from 'lucide-react';
+import { CheckCircle2, Loader2 } from 'lucide-react';
 import { GiTakeMyMoney } from 'react-icons/gi';
 import Link from 'next/link';
 import Image from 'next/image';
 import { CheckoutFormData } from '@/types/checkout';
 import CheckOutSkeleton from '@/components/CheckOutSkeleton';
+import { RiShoppingBag2Line } from 'react-icons/ri';
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -107,6 +108,10 @@ export default function CheckoutPage() {
 
     const success = await processCheckout(checkoutData);
     setIsProcessing(false);
+
+    if (success) {
+      return;
+    }
   };
 
   // Loading state
@@ -117,8 +122,8 @@ export default function CheckoutPage() {
   // Success state
   if (orderResponse) {
     return (
-      <div className='container mx-auto px-4 py-16'>
-        <Card className='max-w-md mx-auto text-center p-12'>
+      <div className='container mx-auto '>
+        <div className='mx-auto text-center p-12'>
           <div className='flex justify-center mb-6'>
             <div className='w-24 h-24 bg-linear-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center'>
               <CheckCircle2 className='w-12 h-12 text-green-600' />
@@ -133,20 +138,20 @@ export default function CheckoutPage() {
           </p>
           <p className='text-gray-500 text-sm mb-6'>{orderResponse.message}</p>
 
-          <div className='bg-linear-to-br from-gray-50 to-white rounded-lg p-6 mb-6'>
+          <div className='p-6 mb-6'>
             <p className='text-sm text-gray-500 mb-2'>Order Total</p>
-            <p className='text-4xl font-bold bg-linear-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent'>
+            <p className='text-gray-900 text-2xl font-semibold'>
               ${orderResponse.total.toFixed(2)}
             </p>
           </div>
 
           <Link href='/market'>
-            <Button className='bg-linear-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'>
-              Continue Shopping
-              <ArrowLeft className='ml-2 h-4 w-4 rotate-180' />
+            <Button variant='outline' className='text-sm cursor-pointer '>
+              Shop Products
+              <RiShoppingBag2Line className='ml-2' />
             </Button>
           </Link>
-        </Card>
+        </div>
       </div>
     );
   }

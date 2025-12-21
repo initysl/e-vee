@@ -35,7 +35,7 @@ export default function Navbar() {
       badge: getItemCount(),
       matchPaths: ['/cart'],
     },
-    { name: 'Evee', href: '/chat', icon: RiRobot3Line, matchPaths: ['/chat'] },
+    { name: 'E-vee', href: '/evee', icon: RiRobot3Line, matchPaths: ['/evee'] },
   ];
 
   return (
@@ -68,7 +68,9 @@ export default function Navbar() {
                 >
                   <item.icon size={20} className='shrink-0' />
                   {isActive && (
-                    <span className='text-sm font-medium'>{item.name}</span>
+                    <span className='text-sm font-medium hidden sm:flex'>
+                      {item.name}
+                    </span>
                   )}
                   {item.badge && item.badge > 0 ? (
                     <span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold'>

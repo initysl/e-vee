@@ -24,14 +24,25 @@ async def chat(request: ChatRequest, session_id: Optional[str] = Header(None)):
     
     try:
         chatbot = get_chatbot_service()
-        response = await chatbot.process_message(request.message, session_id)
-        if response is None:
-            raise HTTPException(status_code=500, detail="Chatbot failed to process the message")
-        
+        result = await chatbot.process_message(request.message, session_id)
+
+        if not isinstance(result, dict):
+            raise HTTPException(
+                status_code=500,
+                detail=f"Invalid chatbot response type: {type(result)}"
+            )
+
+        if "response" not in result or "intent" not in result:
+            raise HTTPException(
+                status_code=500,
+                detail="Chatbot response missing required keys"
+            )
+
         return ChatResponse(
-            response = response['response'],
-            intent = response['intent'],
-            metadata = {k:v for k,v in response.items() if k not in ['response','intent']}
+        response=result["response"],
+        intent=result["intent"],
+        metadata={k: v for k, v in result.items() if k not in ("response", "intent")}
         )
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Chatbot error: {str(e)}")
