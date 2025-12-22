@@ -1,7 +1,5 @@
 import os
-from dotenv import load_dotenv
 from typing import List, Dict, Any
-import numpy as np
 from app.services.product_service import get_products
 from app.data.shophub_data import SHOPHUB_INFO
 from app.embeddings.chroma_client import get_chroma_client
@@ -9,7 +7,7 @@ from app.services.product_service import clear_cache
 from huggingface_hub import InferenceClient
 
 
-client = InferenceClient(token=os.getenv("HUGGINGFACEHUB_API_KEY"))
+client = InferenceClient(token=os.getenv("HF_TOKEN"))
 
 def create_embeddings(texts: List[str]) -> List[List[float]]:
     """Generate embeddings using HuggingFace Inference API"""
