@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Depends
 from typing import Optional
 from pydantic import BaseModel
 from app.services.chatbot_service import get_chatbot_service
+from app.core.rate_limiter import chatbot_limit
 
 router = APIRouter(prefix="/chatbot", tags=["chatbot"])
 
@@ -14,7 +15,7 @@ class ChatResponse(BaseModel):
     metadata: Optional[dict] = None
 
 
-@router.post("/chat", response_model=ChatResponse)
+@router.post("/chat", response_model=ChatResponse, dependencies=[Depends(chatbot_limit)])
 async def chat(request: ChatRequest, session_id: Optional[str] = Header(None)):
     """"Process user message through chatbot."""
     if not session_id:

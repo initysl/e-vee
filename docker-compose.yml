@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:alpine
+    container_name: shophub-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: shophub-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=${REDIS_URL}
+      - FAKE_STORE_URL=${FAKE_STORE}
+      - PRODUCTS_CACHE_TTL=${PRODUCTS_CACHE_TTL}
+    volumes:
+      - ./server:/app
+      - ./server/logs:/app/logs
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: shophub-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_API_URL=${NEXT_PUBLIC_API_BASE_URL}
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+
+volumes:
+  redis_data:

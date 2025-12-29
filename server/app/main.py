@@ -1,3 +1,8 @@
+from dotenv import load_dotenv
+load_dotenv()
+from app.core.logging_config import log_error, log_info
+from app.services.product_service import close_redis
+import time
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -5,36 +10,49 @@ from contextlib import asynccontextmanager
 from app.api import api_router
 from app.embeddings.embed_products import embed_and_store_products
 from app.embeddings.chroma_client import get_collection_count
+from app.core.rate_limiter import init_limiter
+
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Startup and shutdown events for the application.
-    Loads products and creates embeddings on startup.
-    """
-
+    """Startup and shutdown events for the application."""
+    
     # Startup
-    print("Starting up.. Starting ShopHub E-commerce API..")
+    startup_time = time.time()
+    log_info("Starting ShopHub E-commerce API")
+
+    # Initialize rate limiter
+    try:
+        await init_limiter()
+        log_info("Rate limiter initialized successfully")
+    except Exception as e:
+        log_error(e, "Failed to initialize rate limiter")
+        raise
 
     try:
         count = get_collection_count()
         if count == 0:
-            print("No data found. Loading products and creating embeddings...")
+            log_info("No data found in ChromaDB, loading products and creating embeddings")
             await embed_and_store_products()
             count = get_collection_count()
         else:
-            print(f"Found existing {count} documents in ChromaDB. Skipping embedding.")
+            log_info(f"Found existing documents in ChromaDB", count=count)
         
-        print(f"ChromaDB ready with {count} documents. ✅ ")
+        log_info("ChromaDB ready", document_count=count)
     except Exception as e:
-        print(f"Error during startup embedding: {e} ❌")
+        log_error(e, "Error during startup embedding process")
         raise
-    print("Startup complete; API is ready. ✅")
+    
+    startup_duration = time.time() - startup_time
+    log_info(f"Startup complete", duration=f"{startup_duration:.2f}s")
+    
     yield
 
     # Shutdown
-    print("Shutting down ShopHub API... 👋 ")
-
+    log_info("Shutting down ShopHub API")
+    await close_redis()
+    log_info("Shutdown complete")
 
 # Initialize FastAPI app
 app = FastAPI(
@@ -67,8 +85,8 @@ async def root():
     """Root endpoint - API health check"""
     return {
         "message": "Welcome to ShopHub E-commerce API!",
-        "satus": "running",
-        "docs:": "/docs",
+        "status": "running",
+        "docs": "/docs",
         "version": "1.0.0"
     }
 
@@ -79,7 +97,7 @@ async def health_check():
     try:
         count = get_collection_count()
         return {
-            "satus": "healthy",
+            "status": "healthy",
             "database": "connected",
             "documents_count": count
         }

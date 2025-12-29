@@ -1,7 +1,8 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Depends
 from typing import List, Optional
 from pydantic import BaseModel
 from app.services.product_service import get_products
+from app.core.rate_limiter import product_limit
 
 router = APIRouter(prefix="/products", tags=["products"])
 
@@ -14,7 +15,7 @@ class Product(BaseModel):
     image: str
     rating: Optional[dict] = None
 
-@router.get("/", response_model=List[Product])
+@router.get("/", response_model=List[Product], dependencies=[Depends(product_limit)])
 async def list_products():
     """"Get all products."""
     try:
@@ -23,7 +24,7 @@ async def list_products():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/{product_id}", response_model=Product)
+@router.get("/{product_id}", response_model=Product, dependencies=[Depends(product_limit)])
 async def get_product_by_id(product_id: int):
     """"Get a specific product by ID."""
     try:
@@ -35,7 +36,7 @@ async def get_product_by_id(product_id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/category/{category_name}", response_model=List[Product])
+@router.get("/category/{category_name}", response_model=List[Product], dependencies=[Depends(product_limit)])
 async def get_products_by_category(category_name: str):
     """"Get products by category."""
     try:
@@ -49,7 +50,7 @@ async def get_products_by_category(category_name: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-@router.get("/search/{query}")
+@router.get("/search/{query}", dependencies=[Depends(product_limit)])
 async def search_products(query: str):
     """"Search products by title or description."""
     try:

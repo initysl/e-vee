@@ -137,7 +137,7 @@ async def refresh_embedddings():
     """
     Force refresh products and recreate embeddings.
     """
-    clear_cache()
+    await clear_cache()
 
     # Re-embed products and store
     await embed_and_store_products()

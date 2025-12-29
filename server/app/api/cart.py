@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Depends
 from typing import List, Optional
 from pydantic import BaseModel
 from app.services.cart_service import (
@@ -7,7 +7,8 @@ from app.services.cart_service import (
     remove_from_cart,
     update_quantity,
     clear_cart
-    )
+)
+from app.core.rate_limiter import cart_limit
 
 router = APIRouter(prefix="/cart", tags=["cart"])
 
@@ -20,7 +21,7 @@ class UpdateQuantityRequest(BaseModel):
     quantity: int
 
 
-@router.get("/")
+@router.get("/", dependencies=[Depends(cart_limit)])
 async def view_cart(session_id: Optional[str] = Header(None)):
     """Get current cart contents."""
     if not session_id:
@@ -32,7 +33,7 @@ async def view_cart(session_id: Optional[str] = Header(None)):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/add")
+@router.post("/add", dependencies=[Depends(cart_limit)])
 async def add_item_to_cart(request: AddToCartRequest, session_id: Optional[str] = Header(None)):
     """Add item to cart."""
     if not session_id:
@@ -44,7 +45,7 @@ async def add_item_to_cart(request: AddToCartRequest, session_id: Optional[str] 
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.put("/update")
+@router.put("/update", dependencies=[Depends(cart_limit)])
 async def update_cart_item(request: UpdateQuantityRequest, session_id: Optional[str] = Header(None)):
     """Update item quantity in cart."""
     if not session_id:
@@ -56,7 +57,7 @@ async def update_cart_item(request: UpdateQuantityRequest, session_id: Optional[
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/remove/{product_id}")
+@router.delete("/remove/{product_id}", dependencies=[Depends(cart_limit)])
 async def remove_item_from_cart(product_id: str, session_id: Optional[str] = Header(None)):
     """Remove item from cart"""
     if not session_id:
@@ -68,7 +69,7 @@ async def remove_item_from_cart(product_id: str, session_id: Optional[str] = Hea
         raise HTTPException(status_code=500, detail=str(e))
     
 
-@router.delete("/clear")
+@router.delete("/clear", dependencies=[Depends(cart_limit)])
 async def clear_user_cart(session_id: Optional[str] = Header(None)):
     """Clear the entire cart."""
     if not session_id:

@@ -28,7 +28,7 @@ server/chroma_data/
 server/chroma_db/
 server/*.txt
 server/s.txt
-
+server/logs/*.log
 # Database
 *.db
 *.sqlite

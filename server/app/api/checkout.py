@@ -1,9 +1,10 @@
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Depends
 from typing import Optional
 from pydantic import BaseModel, EmailStr
 import uuid
 
 from app.services.cart_service import get_cart, clear_cart
+from app.core.rate_limiter import checkout_limit, cart_limit
 
 router = APIRouter(prefix="/checkout", tags=["checkout"])
 
@@ -27,7 +28,7 @@ class CheckoutSummary(BaseModel):
     total: float
     item_count: int
 
-@router.post("/process", response_model=CheckoutResponse)
+@router.post("/process", response_model=CheckoutResponse, dependencies=[Depends(checkout_limit)])
 async def process_checkout(
     request: CheckoutRequest, 
     session_id: Optional[str] = Header(None)
@@ -83,7 +84,7 @@ async def process_checkout(
         )
 
 
-@router.get("/summary", response_model=CheckoutSummary)
+@router.get("/summary", response_model=CheckoutSummary, dependencies=[Depends(cart_limit)])
 async def checkout_summary(session_id: Optional[str] = Header(None)):
     """
     Get checkout summary before final purchase.
