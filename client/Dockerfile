@@ -1,4 +1,5 @@
-FROM node:18-alpine
+FROM node:22-alpine
+
 
 WORKDIR /app
 
@@ -10,6 +11,9 @@ RUN npm install
 
 # Copy application
 COPY . .
+
+# Build
+RUN npm run build
 
 # Expose port
 EXPOSE 3000
