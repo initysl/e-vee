@@ -1,5 +1,4 @@
 import os
-from dotenv import load_dotenv
 import httpx
 from typing import List, Dict, Any, Optional
 import json
@@ -105,7 +104,7 @@ async def _fetch_from_api() -> List[Dict[str, Any]]:
         return []
 
 
-async def get_products(force_refresh: bool = False) -> List[Dict[str, Any]]:
+async def get_products(force_refresh: bool = True) -> List[Dict[str, Any]]:
     """
     Get product data with Redis caching.
     Args:
