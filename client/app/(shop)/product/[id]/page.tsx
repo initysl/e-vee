@@ -96,8 +96,8 @@ export default function ProductDetailPage() {
             <Image
               src={product.image}
               alt={product.title}
-              width={300}
-              height={300}
+              width={200}
+              height={200}
               className='object-contain drop-shadow-xl'
               priority
             />
@@ -106,7 +106,7 @@ export default function ProductDetailPage() {
 
         {/* Info */}
         <div className='flex flex-col'>
-          <h1 className='text-2xl font-bold'>{product.title}</h1>
+          <h1 className='text-xl font-semibold'>{product.title}</h1>
 
           {/* Rating */}
           {product.rating && (

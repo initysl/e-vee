@@ -15,8 +15,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'ShopHub',
-  description: 'Shop quality products with RAG-powered shopping assistance',
+  title: 'E-vee',
+  description: 'A RAG shopping assistant',
 };
 
 export default function RootLayout({

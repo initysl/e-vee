@@ -22,7 +22,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      - REDIS_URL=redis://localhost:6379
+      - REDIS_URL=redis://redis:6379/0
       - FAKE_STORE_URL=https://fakestoreapi.com/products
       - PRODUCTS_CACHE_TTL=31536000
     volumes:

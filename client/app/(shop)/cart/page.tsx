@@ -62,14 +62,15 @@ export default function CartPage() {
               <ShoppingBag className='w-12 h-12 text-gray-400' />
             </div>
           </div>
-          <h2 className='text-2xl font-bold text-gray-900 mb-2'>
-            Your cart is empty
-          </h2>
+          <h2 className='text-xl  text-gray-900 mb-2'>Your cart is empty</h2>
           <p className='text-gray-500 mb-6'>
             Add some products to get started!
           </p>
           <Link href='/market'>
-            <Button variant='outline' className='text-sm cursor-pointer '>
+            <Button
+              variant='outline'
+              className='text-sm text-gray-500 cursor-pointer '
+            >
               Shop Products
               <RiShoppingBag2Line className='ml-2' />
             </Button>
@@ -99,43 +100,43 @@ export default function CartPage() {
         </Button>
       </div>
 
-      <div className='grid lg:grid-cols-3 gap-8'>
+      <div className='grid lg:grid-cols-3 gap-8 '>
         {/* Cart Items */}
-        <div className='lg:col-span-2 space-y-4'>
+        <div className='lg:col-span-2 space-y-4 '>
           {cart?.items.map((item) => (
             <div
               key={item.product_id}
               className='overflow-hidden hover:shadow-md rounded-2xl shadow-sm transition-shadow'
             >
-              <div className='p-0'>
-                <div className='flex gap-4 p-4'>
+              <div className='w-full'>
+                <div className='flex flex-col gap-4 p-4 md:flex-row md:gap-4'>
                   {/* Product Image */}
-                  <div className='relative w-32 h-32 shrink-0 rounded-lg bg-linear-to-br from-blue-100 to-purple-100 overflow-hidden'>
+                  <div className='relative w-full h-40 md:w-32 md:h-32 shrink-0 rounded-lg bg-linear-to-br from-blue-100 to-purple-100 overflow-hidden'>
                     <Image
                       src={item.image}
                       alt={item.title}
                       fill
-                      className='object-contain p-2'
-                      sizes='128px'
+                      className='object-contain p-3'
+                      sizes='(max-width: 768px) 100vw, 128px'
                     />
                   </div>
 
                   {/* Product Info */}
-                  <div className='flex-1 flex flex-col justify-between'>
+                  <div className='flex flex-col justify-between flex-1'>
                     <div>
-                      <h3 className='font-semibold text-sm line-clamp-2'>
+                      <h3 className='font-semibold text-sm md:text-base line-clamp-2'>
                         {item.title}
                       </h3>
-                      <p className='text-lg font-normal text-gray-500'>
+                      <p className='text-base md:text-lg font-normal text-gray-500 mt-1'>
                         ${item.price.toFixed(2)}
                       </p>
                     </div>
 
-                    {/* Quantity Controls */}
-                    <div className='flex items-center gap-5 mt-4'>
-                      <div className='flex items-center gap-2 bg-zinc-100 rounded-full px-2'>
+                    {/* Quantity + Remove */}
+                    <div className='flex items-center justify-between mt-4 md:mt-6'>
+                      <div className='flex items-center gap-2 bg-zinc-100 rounded-full px-3 py-1'>
                         <button
-                          className='w-6 h-6 flex items-center justify-center rounded-full hover:bg-zinc-200'
+                          className='w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-200 disabled:opacity-50'
                           onClick={() =>
                             handleUpdateQuantity(
                               item.product_id,
@@ -147,12 +148,15 @@ export default function CartPage() {
                             updatingItems.has(item.product_id)
                           }
                         >
-                          <Minus className='h-3 w-3' />
+                          <Minus className='h-4 w-4' />
                         </button>
-                        <span className='text-sm font-semibold w-4 text-center'>
+
+                        <span className='text-sm font-semibold w-6 text-center'>
                           {item.quantity}
                         </span>
+
                         <button
+                          className='w-8 h-8 flex items-center justify-center rounded-full hover:bg-zinc-200 disabled:opacity-50'
                           onClick={() =>
                             handleUpdateQuantity(
                               item.product_id,
@@ -160,31 +164,28 @@ export default function CartPage() {
                             )
                           }
                           disabled={updatingItems.has(item.product_id)}
-                          className='w-6 h-6 flex items-center justify-center rounded-full hover:bg-zinc-200'
                         >
-                          <Plus className='w-3 h-3' />
+                          <Plus className='h-4 w-4' />
                         </button>
                       </div>
 
                       <Button
                         variant='ghost'
-                        size='sm'
+                        size='icon'
                         onClick={() => handleRemove(item.product_id)}
                         className='text-red-600 hover:text-red-700 hover:bg-red-50'
                       >
-                        <Trash2 className='h-4 w-4' />
+                        <Trash2 className='h-5 w-5' />
                       </Button>
                     </div>
                   </div>
 
                   {/* Subtotal */}
-                  <div className='flex flex-col items-end justify-between'>
-                    <div className='text-right'>
-                      <p className='text-sm text-gray-500 mb-1'>Subtotal</p>
-                      <p className='font-semibold text-gray-900'>
-                        ${item.subtotal.toFixed(2)}
-                      </p>
-                    </div>
+                  <div className='flex justify-between items-center md:flex-col md:items-end md:justify-between'>
+                    <p className='text-sm text-gray-500 md:mb-1'>Subtotal</p>
+                    <p className='font-semibold text-gray-900 text-base'>
+                      ${item.subtotal.toFixed(2)}
+                    </p>
                   </div>
                 </div>
               </div>

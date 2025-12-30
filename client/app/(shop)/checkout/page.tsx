@@ -146,7 +146,10 @@ export default function CheckoutPage() {
           </div>
 
           <Link href='/market'>
-            <Button variant='outline' className='text-sm cursor-pointer '>
+            <Button
+              variant='outline'
+              className='text-sm text-gray-500 cursor-pointer '
+            >
               Shop Products
               <RiShoppingBag2Line className='ml-2' />
             </Button>
@@ -161,35 +164,23 @@ export default function CheckoutPage() {
   return (
     <div className='container'>
       {/* Header */}
-      <div className='flex items-center justify-between mb-2'>
-        <div>
-          <p className='text-gray-500 mt-1'>Complete your purchase</p>
-        </div>
-        {/* <Link href='/cart'>
-          <Button variant='outline'>
-            <ArrowLeft className='mr-2 h-4 w-4' />
-            Back to Cart
-          </Button>
-        </Link> */}
+      <div className='flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-2'>
+        <p className='text-gray-500'>Complete your purchase</p>
       </div>
 
-      <div className='grid lg:grid-cols-3 gap-8'>
+      <div className='grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8'>
         {/* Checkout Form */}
         <div className='lg:col-span-2 space-y-4'>
-          {/* Contact Information Card */}
-          <Card className='overflow-hidden hover:shadow-md shadow-sm transition-shadow'>
-            <CardContent className='p-6'>
-              <h3 className='text-md font-normal text-gray-900 mb-4'>
+          {/* Contact Information */}
+          <Card className='shadow-sm hover:shadow-md transition-shadow'>
+            <CardContent className='p-4 sm:p-6'>
+              <h3 className='text-base font-normal text-gray-900 mb-4'>
                 Contact Information
               </h3>
-              <div className='grid md:grid-cols-2 gap-4'>
+
+              <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
                 <div>
-                  <Label
-                    htmlFor='email'
-                    className='text-sm font-normal text-gray-700'
-                  >
-                    Email Address *
-                  </Label>
+                  <Label htmlFor='email'>Email Address *</Label>
                   <Input
                     id='email'
                     type='email'
@@ -208,12 +199,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div>
-                  <Label
-                    htmlFor='phone'
-                    className='text-sm font-normal text-gray-700'
-                  >
-                    Phone Number *
-                  </Label>
+                  <Label htmlFor='phone'>Phone Number *</Label>
                   <Input
                     id='phone'
                     type='tel'
@@ -234,23 +220,19 @@ export default function CheckoutPage() {
             </CardContent>
           </Card>
 
-          {/* Shipping Address Card */}
-          <Card className='overflow-hidden hover:shadow-md shadow-sm transition-shadow'>
-            <CardContent className='p-6'>
-              <h3 className='text-lg font-normal text-gray-900 mb-4'>
+          {/* Shipping Address */}
+          <Card className='shadow-sm hover:shadow-md transition-shadow'>
+            <CardContent className='p-4 sm:p-6'>
+              <h3 className='text-base font-normal text-gray-900 mb-4'>
                 Shipping Address
               </h3>
+
               <div className='space-y-4'>
                 <div>
-                  <Label
-                    htmlFor='address'
-                    className='text-sm font-normal text-gray-700'
-                  >
-                    Street Address *
-                  </Label>
+                  <Label htmlFor='address'>Street Address *</Label>
                   <Input
                     id='address'
-                    placeholder='123 Main St, Apt 4B'
+                    placeholder='123 Main St'
                     value={formData.shipping_address}
                     onChange={(e) =>
                       handleInputChange('shipping_address', e.target.value)
@@ -266,14 +248,9 @@ export default function CheckoutPage() {
                   )}
                 </div>
 
-                <div className='grid grid-cols-6 gap-4'>
-                  <div className='col-span-3'>
-                    <Label
-                      htmlFor='city'
-                      className='text-sm font-normal text-gray-700'
-                    >
-                      City *
-                    </Label>
+                <div className='grid grid-cols-1 sm:grid-cols-3 gap-4'>
+                  <div>
+                    <Label htmlFor='city'>City *</Label>
                     <Input
                       id='city'
                       placeholder='New York'
@@ -281,24 +258,11 @@ export default function CheckoutPage() {
                       onChange={(e) =>
                         handleInputChange('city', e.target.value)
                       }
-                      className={`mt-1 ${
-                        formErrors.city ? 'border-red-500' : ''
-                      }`}
                     />
-                    {formErrors.city && (
-                      <p className='text-sm text-red-600 mt-1'>
-                        {formErrors.city}
-                      </p>
-                    )}
                   </div>
 
-                  <div className='col-span-1'>
-                    <Label
-                      htmlFor='state'
-                      className='text-sm font-normal text-gray-700'
-                    >
-                      State *
-                    </Label>
+                  <div>
+                    <Label htmlFor='state'>State *</Label>
                     <Input
                       id='state'
                       placeholder='NY'
@@ -306,24 +270,11 @@ export default function CheckoutPage() {
                       onChange={(e) =>
                         handleInputChange('state', e.target.value)
                       }
-                      className={`mt-1 ${
-                        formErrors.state ? 'border-red-500' : ''
-                      }`}
                     />
-                    {formErrors.state && (
-                      <p className='text-sm text-red-600 mt-1'>
-                        {formErrors.state}
-                      </p>
-                    )}
                   </div>
 
-                  <div className='col-span-2'>
-                    <Label
-                      htmlFor='zip'
-                      className='text-sm font-normal text-gray-700'
-                    >
-                      ZIP Code *
-                    </Label>
+                  <div>
+                    <Label htmlFor='zip'>ZIP *</Label>
                     <Input
                       id='zip'
                       placeholder='10001'
@@ -331,27 +282,20 @@ export default function CheckoutPage() {
                       onChange={(e) =>
                         handleInputChange('zip_code', e.target.value)
                       }
-                      className={`mt-1 ${
-                        formErrors.zip_code ? 'border-red-500' : ''
-                      }`}
                     />
-                    {formErrors.zip_code && (
-                      <p className='text-sm text-red-600 mt-1'>
-                        {formErrors.zip_code}
-                      </p>
-                    )}
                   </div>
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          {/* Payment Method Card */}
-          <Card className='overflow-hidden hover:shadow-md shadow-sm transition-shadow'>
-            <CardContent className='p-6'>
-              <h3 className='text-lg font-normal text-gray-900 mb-4'>
+          {/* Payment Method */}
+          <Card className='shadow-sm hover:shadow-md transition-shadow'>
+            <CardContent className='p-4 sm:p-6'>
+              <h3 className='text-base font-normal text-gray-900 mb-4'>
                 Payment Method
               </h3>
+
               <Select
                 value={formData.payment_method}
                 onValueChange={(value) =>
@@ -368,51 +312,46 @@ export default function CheckoutPage() {
                   <SelectItem value='google_pay'>Google Pay</SelectItem>
                 </SelectContent>
               </Select>
-              <p className='text-sm text-gray-500 mt-2'>
-                💡 Payment processing is simulated for this demo
+
+              <p className='text-xs text-gray-500 mt-2'>
+                Payment processing is simulated for this demo
               </p>
             </CardContent>
           </Card>
 
-          {/* Error Message */}
+          {/* Error */}
           {error && (
-            <div className='bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg'>
+            <div className='bg-red-50 border border-red-200 text-red-700 p-4 rounded-lg'>
               <p className='font-normal'>Error</p>
               <p className='text-sm'>{error}</p>
             </div>
           )}
         </div>
 
-        {/* Order Summary Sidebar */}
+        {/* Order Summary */}
         <div className='lg:col-span-1'>
-          <Card className='sticky top-20 bg-white border-2'>
-            <CardContent className='p-6'>
-              <h2 className='text-xl font-bold text-gray-900 mb-4'>
-                Order Summary
-              </h2>
+          <Card className='lg:sticky lg:top-20 border'>
+            <CardContent className='p-4 sm:p-6'>
+              <h2 className='text-lg font-semibold mb-4'>Order Summary</h2>
 
-              {/* Cart Items Preview */}
-              <div className='max-h-48 overflow-y-auto space-y-3 mb-4'>
+              <div className='space-y-3 max-h-48 overflow-y-auto'>
                 {cart.items.map((item) => (
                   <div key={item.product_id} className='flex gap-3'>
-                    <div className='relative w-16 h-16 rounded-lg bg-linear-to-br from-blue-100 to-purple-100 overflow-hidden shrink-0'>
+                    <div className='relative w-14 h-14 rounded bg-blue-100 shrink-0'>
                       <Image
                         src={item.image}
                         alt={item.title}
                         fill
                         className='object-contain p-2'
-                        sizes='64px'
                       />
                     </div>
                     <div className='flex-1 min-w-0'>
-                      <p className='text-sm font-normal text-gray-900 truncate'>
-                        {item.title}
-                      </p>
+                      <p className='text-sm truncate'>{item.title}</p>
                       <p className='text-xs text-gray-500'>
                         Qty: {item.quantity}
                       </p>
                     </div>
-                    <span className='text-sm font-semibold text-gray-900'>
+                    <span className='text-sm font-semibold'>
                       ${item.subtotal.toFixed(2)}
                     </span>
                   </div>
@@ -421,76 +360,43 @@ export default function CheckoutPage() {
 
               <Separator className='my-4' />
 
-              {/* Totals */}
               {summary && (
-                <div className='space-y-3'>
-                  <div className='flex justify-between text-sm text-gray-600'>
+                <div className='space-y-2 text-sm'>
+                  <div className='flex justify-between'>
                     <span>Subtotal</span>
-                    <span className='font-semibold'>
-                      ${summary.subtotal.toFixed(2)}
-                    </span>
+                    <span>${summary.subtotal.toFixed(2)}</span>
                   </div>
 
-                  <div className='flex justify-between text-sm text-gray-600'>
+                  <div className='flex justify-between'>
                     <span>Shipping</span>
-                    <span
-                      className={`font-semibold ${
-                        summary.shipping === 0 ? 'text-green-600' : ''
-                      }`}
-                    >
+                    <span>
                       {summary.shipping === 0
                         ? 'FREE'
                         : `$${summary.shipping.toFixed(2)}`}
                     </span>
                   </div>
 
-                  <div className='flex justify-between text-sm text-gray-600'>
-                    <span>Tax (8%)</span>
-                    <span className='font-semibold'>
-                      ${summary.tax.toFixed(2)}
-                    </span>
+                  <div className='flex justify-between'>
+                    <span>Tax</span>
+                    <span>${summary.tax.toFixed(2)}</span>
                   </div>
 
                   <Separator />
 
-                  <div className='flex justify-between items-center text-md font-normal text-gray-900'>
+                  <div className='flex justify-between font-semibold text-base'>
                     <span>Total</span>
-                    <span className='text-gray-900 font-semibold'>
-                      ${summary.total.toFixed(2)}
-                    </span>
+                    <span>${summary.total.toFixed(2)}</span>
                   </div>
-
-                  {summary.subtotal < 50 && (
-                    <div className='bg-blue-50 border border-blue-200 rounded-lg p-3 text-sm text-blue-700'>
-                      💡 Add ${(50 - summary.subtotal).toFixed(2)} more for free
-                      shipping!
-                    </div>
-                  )}
                 </div>
               )}
 
-              {/* Place Order Button */}
               <Button
                 onClick={handleSubmit}
                 disabled={isProcessing || loading}
-                className='bg-blue-700 hover:bg-blue-600 cursor-pointer w-full text-sm shadow-lg hover:shadow-xl transition-all mt-6'
+                className='w-full mt-6 bg-blue-700 hover:bg-blue-600'
               >
-                {isProcessing ? (
-                  <>
-                    <Loader2 className='mr-2 animate-spin' size={16} />
-                    Processing...
-                  </>
-                ) : (
-                  <>
-                    Place Order
-                    <GiTakeMyMoney className='ml-2' size={16} />
-                  </>
-                )}
+                {isProcessing ? 'Processing...' : 'Place Order'}
               </Button>
-
-              <p className='text-xs text-gray-500 text-center mt-4'>
-                By placing your order, you agree to our terms and conditions
-              </p>
             </CardContent>
           </Card>
         </div>

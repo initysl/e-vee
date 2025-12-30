@@ -34,16 +34,16 @@ export default function Home() {
   ];
 
   return (
-    <div className='min-h-screen flex items-center justify-center bg-white font-sans'>
+    <div className='min-h-svh flex items-center justify-center bg-white font-sans'>
       <main className='space-y-10 w-full max-w-5xl px-6 text-left'>
-        <h1 className='text-4xl sm:text-5xl font-bold text-zinc-900'>
-          Welcome to <span className='text-blue-600'>ShopHub</span>
+        <h1 className='text-4xl font-bold text-zinc-900'>
+          Welcome to <span className='text-blue-600'>E-vee</span>
         </h1>
         <div className='flex items-center'>
           {products.map((product, index) => (
             <div
               key={product.id}
-              className='shrink-0 w-18 h-18 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-white shadow-md transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl relative cursor-pointer'
+              className='shrink-0 w-16 h-16 sm:w-20 sm:h-20 rounded-lg overflow-hidden border-2 border-white shadow-md transition-all duration-300 ease-out hover:-translate-y-2 hover:shadow-xl relative cursor-pointer'
               style={{
                 marginLeft: index === 0 ? '0' : '-32px',
                 zIndex: products.length - index,
@@ -61,8 +61,9 @@ export default function Home() {
           ))}
         </div>
 
-        <p className='mt-10 text-lg text-zinc-600 max-w-xl'>
-          Coupled with a RAG-powered shopping assistance chatbot
+        <p className='mt-10 text-md text-zinc-600 max-w-md'>
+          A RAG shopping assistant designed to streamline the shopping
+          experience
         </p>
 
         <div>
