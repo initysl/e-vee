@@ -66,8 +66,15 @@ async def _fetch_from_api() -> List[Dict[str, Any]]:
     start_time = time.time()
     timeout = httpx.Timeout(10.0)
     
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+        "Accept": "application/json",
+        "Accept-Language": "en-US,en;q=0.9",
+    }
+    
+
     try:
-        async with httpx.AsyncClient(timeout=timeout) as client:
+        async with httpx.AsyncClient(timeout=timeout, headers=headers, follow_redirects=True) as client:
             response = await client.get(FAKE_STORE_URL)
             log_info(
                 "FakeStore response",
