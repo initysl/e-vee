@@ -8,7 +8,6 @@ from redis.exceptions import RedisError
 import time
 from app.core.logging_config import log_performance, log_error, log_warning, log_info
 
-load_dotenv()
 
 FAKE_STORE_URL = os.getenv("FAKE_STORE")
 REDIS_URL = os.getenv("REDIS_URL")
