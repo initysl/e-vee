@@ -69,6 +69,11 @@ async def _fetch_from_api() -> List[Dict[str, Any]]:
     try:
         async with httpx.AsyncClient(timeout=timeout) as client:
             response = await client.get(FAKE_STORE_URL)
+            log_info(
+                "FakeStore response",
+                status=response.status_code,
+                body=response.text[:300]
+            )
             response.raise_for_status()
             products = response.json()
             
@@ -104,7 +109,7 @@ async def _fetch_from_api() -> List[Dict[str, Any]]:
         return []
 
 
-async def get_products(force_refresh: bool = True) -> List[Dict[str, Any]]:
+async def get_products(force_refresh: bool = False) -> List[Dict[str, Any]]:
     """
     Get product data with Redis caching.
     Args:
