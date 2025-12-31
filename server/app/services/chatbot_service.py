@@ -112,7 +112,7 @@ class ChatbotService:
         
         elif intent == "unknown":
             return {
-                "response": "I'm not sure I understand. I can help you with:\n- Finding products\n- Checking your cart\n- Adding/removing items\n- Checkout\n- Store info\n\nWhat would you like to do?",
+                "response": "I'm not sure I understand. I can help you with:\n- Finding products\n- Checking your cart\n- Adding/removing items\n- Checkout\n\nWhat would you like to do?",
                 "intent": "unknown"
             }
         

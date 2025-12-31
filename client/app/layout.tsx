@@ -20,23 +20,23 @@ export const metadata: Metadata = {
     template: '%s | E-vee',
   },
   description:
-    'E-vee is an AI-powered RAG shopping assistant that helps users discover and purchase products intelligently.',
+    'E-vee is a RAG-powered shopping assistant chatbot that helps users discover and purchase products.',
   applicationName: 'E-vee',
   keywords: [
-    'AI shopping assistant',
+    'Chatbot shopping assistant',
     'RAG ecommerce',
     'AI ecommerce',
     'shopping assistant',
     'product recommendations',
   ],
-  authors: [{ name: 'E-vee Team' }],
+  authors: [{ name: 'Yusuf' }],
   creator: 'E-vee',
   metadataBase: new URL('https://e-vee.vercel.app'),
 
   openGraph: {
-    title: 'E-vee - RAG Shopping Assistant',
+    title: 'E-vee - A RAG-Powered Shopping Assistant Chatbot.',
     description:
-      'Shop products smarter with E-vee, an AI-powered RAG shopping assistant.',
+      'Shop products smarter with E-vee, a RAG-powered shopping assistant chatbot.',
     url: 'https://e-vee.vercel.app',
     siteName: 'E-vee',
     images: [
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'E-vee AI Shopping Assistant',
+        alt: 'E-vee - A RAG-Powered Shopping Assistant Chatbot.',
       },
     ],
     locale: 'en_US',
@@ -53,9 +53,9 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'E-vee - RAG Shopping Assistant',
+    title: 'RAG Chatbot Shopping Assistant',
     description:
-      'Shop products smarter with E-vee, an AI-powered RAG shopping assistant.',
+      'Shop products smarter with E-vee, a RAG-powered shopping assistant chatbot.',
     images: ['/og-image.png'],
     creator: '@initysl',
   },

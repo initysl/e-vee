@@ -35,7 +35,12 @@ export default function Navbar() {
       badge: getItemCount(),
       matchPaths: ['/cart'],
     },
-    { name: 'E-vee', href: '/evee', icon: RiRobot3Line, matchPaths: ['/evee'] },
+    {
+      name: 'E-vee',
+      href: '/evee',
+      icon: RiRobot3Line,
+      matchPaths: ['/evee'],
+    },
   ];
 
   return (

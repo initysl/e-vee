@@ -1,26 +1,19 @@
-import { RiRobot3Line } from 'react-icons/ri';
-
 export default function EveePage() {
   return (
     <div className='container mx-auto'>
       {/* Header */}
-      <div className='text-center mb-14'>
-        <div className='flex justify-center mb-4'>
-          <div className='bg-blue-600 w-14 h-14 rounded-full flex items-center justify-center'>
-            <RiRobot3Line size={28} className='text-white' />
-          </div>
-        </div>
-        <h1 className='text-2xl font-semibold text-gray-900'>E-vee</h1>
+      <div className='text-center mb-10'>
+        <h1 className='text-2xl font-semibold text-gray-900'>Evee</h1>
         <p className='mt-3 text-gray-600 text-sm'>
-          Your RAG-powered shopping assistant for finding products, managing
-          your cart, and checking out through natural conversation.
+          A RAG-powered shopping assistant chatbot for finding products,
+          managing your cart, and checking out through natural conversation.
         </p>
       </div>
 
       {/* What it does */}
       <section className='mb-12'>
         <h2 className='text-lg font-medium text-gray-900 mb-3'>
-          What E-vee Can Do
+          What Evee Can Do
         </h2>
         <div className='space-y-4 text-sm text-gray-600'>
           <p>
@@ -46,7 +39,7 @@ export default function EveePage() {
       <section className='mb-12'>
         <h2 className='text-lg font-medium text-gray-900 mb-3'>How to Use</h2>
         <div className='space-y-3 text-sm text-gray-600'>
-          <p>Open E-vee using the chat interface.</p>
+          <p>Open Evee using the chat interface.</p>
           <p>
             Type your request in plain language, no special syntax required.
           </p>
@@ -59,12 +52,14 @@ export default function EveePage() {
       <section className='mb-12'>
         <h2 className='text-lg font-medium text-gray-900 mb-3'>Tips</h2>
         <div className='space-y-3 text-sm text-gray-600'>
+          <p>Be specific. For example, I need some electronics</p>
+          <p>I want some jewels</p>
+          <p>I need some gadgets</p>
+          <p>What's in my cart</p>
+          <p>Add product 7 to cart</p>
+          <p>Checkout</p>
           <p>
-            Be specific. For example, “Blue running shoes under $80” gives
-            better results than “shoes.”
-          </p>
-          <p>
-            Use product IDs for faster cart actions once you’ve found items you
+            Use product IDs for faster cart actions once you've found items you
             like.
           </p>
           <p>Keep messages short for the best response accuracy.</p>
@@ -74,7 +69,7 @@ export default function EveePage() {
       {/* Technical note */}
       <section>
         <h2 className='text-lg font-medium text-gray-900 mb-3'>
-          Behind the Scenes | This is a Demo Prototype
+          Behind the Scenes ~This is a Demo Prototype
         </h2>
         <p className='text-sm text-gray-600'>
           E-vee uses intent classification and RAG-powered semantic search to

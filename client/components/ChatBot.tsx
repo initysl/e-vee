@@ -15,6 +15,8 @@ export default function Chatbot() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const [showTooltip, setShowTooltip] = useState(false);
+
   const [inputMessage, setInputMessage] = useState('');
 
   const { messages, loading, sendMessage, clearChat } = useChatbot();
@@ -81,80 +83,59 @@ export default function Chatbot() {
     return (
       <motion.div
         key={index}
-        initial={{ opacity: 0, y: 10 }}
+        initial={{ opacity: 0, y: 8 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.3 }}
-        className={`flex flex-col gap-2 ${
-          isUser ? 'items-end' : 'items-start'
-        }`}
+        transition={{ duration: 0.25, ease: 'easeOut' }}
+        className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
       >
-        <div
-          className={`max-w-[min(80%,42rem)] rounded-2xl px-4 py-2 break-words whitespace-pre-wrap leading-relaxed ${
-            isUser
-              ? 'bg-linear-to-r from-blue-600 to-blue-700 text-white'
-              : 'bg-white text-gray-800 shadow-sm border border-gray-200'
-          }`}
-        >
-          <p className='text-sm whitespace-pre-wrap'>{msg.content}</p>
-          <p
-            className={`text-xs mt-1 ${
-              isUser ? 'text-blue-100' : 'text-gray-400'
+        <div className='max-w-[78%] space-y-2'>
+          {/* Message Bubble */}
+          <div
+            className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
+              isUser
+                ? 'bg-zinc-700 text-white rounded-br-md shadow-sm'
+                : 'bg-white text-zinc-800 border border-zinc-200 rounded-bl-md shadow-sm'
             }`}
           >
-            {msg.timestamp.toLocaleTimeString([], {
-              hour: '2-digit',
-              minute: '2-digit',
-            })}
-          </p>
-        </div>
+            <p className='whitespace-pre-wrap'>{msg.content}</p>
 
-        {/* Action Buttons */}
-        {!isUser && msg.action && (
-          <div className='flex gap-2 mt-1'>
-            {msg.action === 'redirect_to_checkout' && (
-              <Button
-                size='sm'
-                onClick={() => handleAction(msg.action)}
-                className='text-xs bg-blue-600 hover:bg-blue-700'
-              >
-                Checkout
-                <MdAddShoppingCart className='size={16}' />
-              </Button>
-            )}
-            {msg.action === 'show_cart_button' && (
-              <Button
-                size='sm'
-                variant='outline'
-                onClick={() => handleAction(msg.action)}
-                className='text-xs'
-              >
-                Cart
-                <MdAddShoppingCart className='size={16}' />
-              </Button>
-            )}
-            {msg.action === 'browse_products' && (
-              <Button
-                size='sm'
-                variant='outline'
-                onClick={() => handleAction(msg.action)}
-                className='text-xs'
-              >
-                Market
-                <RiShoppingBag2Line className='size={16}' />
-              </Button>
-            )}
-            {msg.action === 'show_checkout_button' && (
-              <Button
-                size='sm'
-                onClick={() => handleAction(msg.action)}
-                className='text-xs bg-blue-700 hover:bg-blue-600'
-              >
-                Checkout
-                <GiTakeMyMoney className='size={16} ' />
-              </Button>
-            )}
+            <div className='mt-1 text-[10px] text-zinc-400'>
+              {msg.timestamp.toLocaleTimeString([], {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </div>
           </div>
-        )}
+
+          {/* Quick Action Chips */}
+          {!isUser && msg.action && (
+            <div className='flex flex-wrap gap-2 pt-1'>
+              {msg.action === 'redirect_to_checkout' && (
+                <ActionChip
+                  label='Checkout'
+                  icon={<GiTakeMyMoney size={14} />}
+                  onClick={() => handleAction(msg.action)}
+                />
+              )}
+
+              {msg.action === 'show_cart_button' && (
+                <ActionChip
+                  label='View Cart'
+                  icon={<MdAddShoppingCart size={14} />}
+                  onClick={() => handleAction(msg.action)}
+                />
+              )}
+
+              {msg.action === 'browse_products' && (
+                <ActionChip
+                  label='Browse Market'
+                  icon={<RiShoppingBag2Line size={14} />}
+                  onClick={() => handleAction(msg.action)}
+                />
+              )}
+            </div>
+          )}
+        </div>
       </motion.div>
     );
   };
@@ -183,7 +164,7 @@ export default function Chatbot() {
           }}
         />
 
-        <div className='relative w-14 h-14 bg-linear-to-b from-blue-600 to-zinc-700 opacity-60 rounded-full shadow-2xl flex items-center justify-center'>
+        <div className='relative w-14 h-14 bg-linear-to-b from-blue-600 to-zinc-700 opacity-60 rounded-full  flex items-center justify-center'>
           <AnimatePresence mode='wait'>
             {!isOpen ? (
               <motion.div
@@ -223,10 +204,10 @@ export default function Chatbot() {
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
-              className='absolute right-16 top-1/2 -translate-y-1/2 bg-gray-900 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap shadow-xl'
+              className='absolute right-16 top-1/2 -translate-y-1/2 bg-zinc-700 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap hidden md:block'
             >
               Chat with E-vee
-              <div className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rotate-45 w-2 h-2 bg-gray-900' />
+              <div className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rotate-45 w-2 h-2 bg-zinc-800' />
             </motion.div>
           )}
         </AnimatePresence>
@@ -249,7 +230,7 @@ export default function Chatbot() {
                   <RiRobot3Line size={24} />
                 </div>
                 <div className='flex-1'>
-                  <h3 className='font-semibold text-base'>E-vee Assistant</h3>
+                  <h3 className='font-semibold text-base'>E-vee</h3>
                   <p className='text-xs text-white/80'>Always here to help</p>
                 </div>
                 <button
@@ -283,20 +264,10 @@ export default function Chatbot() {
                   animate={{ opacity: 1 }}
                   className='flex justify-start'
                 >
-                  <div className='bg-white rounded-2xl px-4 py-3 shadow-sm border border-gray-200'>
-                    <div className='flex gap-1'>
-                      {[0, 0.2, 0.4].map((delay, i) => (
-                        <motion.div
-                          key={i}
-                          className='w-2 h-2 bg-gray-400 rounded-full'
-                          animate={{ y: [0, -5, 0] }}
-                          transition={{
-                            duration: 0.6,
-                            repeat: Infinity,
-                            delay,
-                          }}
-                        />
-                      ))}
+                  <div className='bg-white border border-zinc-200 rounded-2xl px-4 py-2 shadow-sm'>
+                    <div className='flex items-center gap-2 text-xs text-zinc-400'>
+                      <span className='w-2 h-2 bg-zinc-400 rounded-full animate-pulse' />
+                      <span>E-vee is thinking…</span>
                     </div>
                   </div>
                 </motion.div>
@@ -338,4 +309,25 @@ export default function Chatbot() {
       </AnimatePresence>
     </>
   );
+  type ActionChipProps = {
+    label: string;
+    icon?: React.ReactNode;
+    onClick: () => void;
+  };
+
+  function ActionChip({ label, icon, onClick }: ActionChipProps) {
+    return (
+      <button
+        onClick={onClick}
+        className='flex items-center gap-1.5 px-3 py-1.5
+                 rounded-full border border-zinc-300
+                 bg-white text-zinc-700 text-xs
+                 hover:bg-zinc-100 hover:border-zinc-400
+                 transition shadow-sm'
+      >
+        {icon}
+        {label}
+      </button>
+    );
+  }
 }
