@@ -35,7 +35,7 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://e-vee.vercel.app'),
 
   openGraph: {
-    title: 'E-vee - A RAG-Powered Shopping Assistant Chatbot.',
+    title: 'E-vee',
     description:
       'Shop products smarter with E-vee, a RAG-powered shopping assistant chatbot.',
     url: 'https://e-vee.vercel.app',
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'E-vee - A RAG-Powered Shopping Assistant Chatbot.',
+        alt: 'E-vee',
       },
     ],
     locale: 'en_US',
@@ -54,10 +54,10 @@ export const metadata: Metadata = {
 
   twitter: {
     card: 'summary_large_image',
-    title: 'RAG Chatbot Shopping Assistant',
+    title: 'E-vee',
     description:
       'Shop products smarter with E-vee, a RAG-powered shopping assistant chatbot.',
-    images: ['/og-image.png'],
+    images: ['https://yusola.vercel.app/og-image.jpg'],
     creator: '@initysl',
   },
 
