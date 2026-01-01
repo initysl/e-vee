@@ -3,7 +3,7 @@ export default function EveePage() {
     <div className='container mx-auto'>
       {/* Header */}
       <div className='text-center mb-10'>
-        <h1 className='text-2xl font-semibold text-gray-900'>Evee</h1>
+        <h1 className='text-2xl font-semibold text-gray-900'>E-vee</h1>
         <p className='mt-3 text-gray-600 text-sm'>
           A RAG-powered shopping assistant chatbot for finding products,
           managing your cart, and checking out through natural conversation.
@@ -13,7 +13,7 @@ export default function EveePage() {
       {/* What it does */}
       <section className='mb-12'>
         <h2 className='text-lg font-medium text-gray-900 mb-3'>
-          What Evee Can Do
+          What E-vee Can Do
         </h2>
         <div className='space-y-4 text-sm text-gray-600'>
           <p>
@@ -39,7 +39,7 @@ export default function EveePage() {
       <section className='mb-12'>
         <h2 className='text-lg font-medium text-gray-900 mb-3'>How to Use</h2>
         <div className='space-y-3 text-sm text-gray-600'>
-          <p>Open Evee using the chat interface.</p>
+          <p>Open E-vee using the chat interface.</p>
           <p>
             Type your request in plain language, no special syntax required.
           </p>

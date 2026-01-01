@@ -62,10 +62,9 @@ export default function Home() {
         </div>
 
         <p className='mt-10 text-md text-zinc-600 max-w-md'>
-          A RAG shopping assistant designed to streamline the shopping
-          experience
+          A RAG-powered shopping assistant chatbot designed to streamline the
+          shopping experience
         </p>
-
         <div>
           <Button
             onClick={handleGetStarted}

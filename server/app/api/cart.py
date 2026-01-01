@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Header, Depends
-from typing import List, Optional
+from typing import Optional
 from pydantic import BaseModel
 from app.services.cart_service import (
     get_cart,
