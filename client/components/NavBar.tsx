@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { MdAddShoppingCart } from 'react-icons/md';
+import { CiSquareInfo } from 'react-icons/ci';
 import { RiShoppingBag2Line, RiRobot3Line } from 'react-icons/ri';
 import { Package } from 'lucide-react';
 import { useState } from 'react';
@@ -26,6 +27,7 @@ export default function Navbar() {
       icon: Package,
       matchPaths: ['/product'],
     },
+    { name: 'Info', href: '#', icon: CiSquareInfo, matchPaths: ['/'] },
     {
       name: 'Cart',
       href: '/cart',
@@ -77,10 +79,12 @@ export default function Navbar() {
                   )}
 
                   {/* Cart Badge */}
-                  {item.badge && item.badge > 0 && (
+                  {item.badge && item.badge > 0 ? (
                     <span className='absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold'>
                       {item.badge}
                     </span>
+                  ) : (
+                    ''
                   )}
 
                   {/* E-vee Active Indicator */}
