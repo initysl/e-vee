@@ -2,7 +2,7 @@ export default function EveePage() {
   return (
     <div className='container mx-auto'>
       {/* Header */}
-      <div className='text-center mb-10'>
+      <div className='mb-10'>
         <h1 className='text-2xl font-semibold text-gray-900'>E-vee</h1>
         <p className='mt-3 text-gray-600 text-sm'>
           A RAG-powered shopping assistant chatbot for finding products,
