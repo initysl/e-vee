@@ -7,6 +7,8 @@ E-VEE is an intelligent assistant designed to streamline e-commerce shopping exp
 - Real-time cart status updates
 - Direct checkout and order-flow assistance
 
+Check here for project writeup: [E-vee.pdf](E-vee.pdf)
+
 **Technology Stack:** RAG+Sentence Tranformer+Python+Next.js
 
 ---
