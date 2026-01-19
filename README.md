@@ -1,6 +1,6 @@
 ## E-VEE — Enhanced Virtual E-Commerce Engine
 
-E-VEE is an intelligent assistant designed to streamline e-commerce shopping experience
+E-VEE is an intelligent assistant designed to streamline the e-commerce shopping experience.
 
 - Instant product information
 - Product lookups powered by a Retrieval-Augmented Generation (RAG) engine
@@ -8,9 +8,11 @@ E-VEE is an intelligent assistant designed to streamline e-commerce shopping exp
 - Direct checkout and order-flow assistance
 
 📄 **Project Write-Up (PDF):**  
-[E-VEE Project Documentation](E-vee.pdf)
+- [View / Download (GitHub)](./E-vee.pdf)  
+- [View / Download (Raw)](https://raw.githubusercontent.com/<USERNAME>/<REPO>/main/E-vee.pdf)
 
-**Technology Stack:** RAG+Sentence Tranformer+Python+Next.js
+**Technology Stack:** RAG + Sentence Transformers + Python + FastAPI + Next.js
+
 
 ---
 
