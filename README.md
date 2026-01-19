@@ -1,6 +1,6 @@
 ## E-VEE — Enhanced Virtual E-Commerce Engine
 
-E-VEE is an intelligent assistant designed to streamline the shopping experience
+E-VEE is an intelligent assistant designed to streamline e-commerce shopping experience
 
 - Instant product information
 - Product lookups powered by a Retrieval-Augmented Generation (RAG) engine
