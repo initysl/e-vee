@@ -114,9 +114,10 @@ else:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Content-Type", "session-id", "Authorization"],
+    allow_credentials=False,
+    allow_methods=["*"],
+    allow_headers=["*"],
+
 )
 
 log_info(f"CORS configured for {ENVIRONMENT}", allowed_origins=allowed_origins)
@@ -165,19 +166,20 @@ async def health_check():
         }
 
 
+
 if __name__ == "__main__":
-    # Development server configuration
     reload = ENVIRONMENT == "development"
-    
+    port = int(os.getenv("PORT", "8000"))
+
     log_info(f"Starting uvicorn server", 
              host="0.0.0.0", 
-             port=8000, 
+             port=port, 
              reload=reload,
              environment=ENVIRONMENT)
-    
+
     uvicorn.run(
-        "app.main:app", 
-        host="0.0.0.0", 
-        port=8000, 
+        "app.main:app",
+        host="0.0.0.0",
+        port=port,
         reload=reload
     )
