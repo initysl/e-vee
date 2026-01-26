@@ -1,8 +1,22 @@
 import axios, { AxiosInstance } from 'axios';
 import { clearSession, getSession } from '@/lib/session';
 
-const API_BASE_URL =
+function normalizeBaseUrl(url: string) {
+  // remove trailing slashes
+  let out = url.trim().replace(/\/+$/, '');
+
+  // if we're on an https page, never allow http API calls
+  if (typeof window !== 'undefined' && window.location.protocol === 'https:') {
+    out = out.replace(/^http:\/\//i, 'https://');
+  }
+
+  return out;
+}
+
+const RAW_BASE =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8000/api';
+
+export const API_BASE_URL = normalizeBaseUrl(RAW_BASE);
 
 export const apiClient: AxiosInstance = axios.create({
   baseURL: API_BASE_URL,
@@ -14,6 +28,12 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: false,
 });
 
+// Debug: confirm what the browser is using (remove later)
+if (typeof window !== 'undefined') {
+  // eslint-disable-next-line no-console
+  console.log('API_BASE_URL (client):', API_BASE_URL);
+}
+
 export const getSessionId = getSession;
 export const clearSessionId = clearSession;
 
@@ -21,16 +41,10 @@ export const clearSessionId = clearSession;
 apiClient.interceptors.request.use(
   (config) => {
     const sessionId = getSession();
-
-    if (sessionId) {
-      config.headers['session-id'] = sessionId;
-    }
-
+    if (sessionId) config.headers['session-id'] = sessionId;
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error),
 );
 
 // Response interceptor
@@ -40,19 +54,19 @@ apiClient.interceptors.response.use(
     if (error.response) {
       console.error('API Error:', error.response.data);
     } else if (error.code === 'ERR_NETWORK') {
-      console.error(
-        'Network Error: Cannot reach backend. Check CORS and backend is running.'
-      );
+      console.error('Network Error: Cannot reach backend (URL/CORS/down).');
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export const checkApiHealth = async (): Promise<boolean> => {
   try {
-    const response = await axios.get(
-      `${API_BASE_URL.replace('/api', '')}/health`
-    );
+    // Only remove a trailing "/api" (not any random "api" elsewhere)
+    const origin = API_BASE_URL.replace(/\/api$/i, '');
+    const healthUrl = `${origin}/health`;
+
+    const response = await axios.get(healthUrl);
     return response.data.status === 'healthy';
   } catch (error) {
     console.error('API Health Check Failed:', error);
