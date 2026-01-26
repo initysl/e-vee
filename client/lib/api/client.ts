@@ -28,12 +28,6 @@ export const apiClient: AxiosInstance = axios.create({
   withCredentials: false,
 });
 
-// Debug: confirm what the browser is using (remove later)
-if (typeof window !== 'undefined') {
-  // eslint-disable-next-line no-console
-  console.log('API_BASE_URL (client):', API_BASE_URL);
-}
-
 export const getSessionId = getSession;
 export const clearSessionId = clearSession;
 
