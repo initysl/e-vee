@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     title: 'E-vee',
     description:
       'Shop products smarter with E-vee, a RAG-powered shopping assistant chatbot.',
-    images: ['https://e-vee.vercel.app/og-image.jpg'],
+    images: ['https://e-vee.vercel.app/og-image.png'],
     creator: '@initysl',
   },
 
