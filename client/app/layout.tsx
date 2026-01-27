@@ -16,48 +16,66 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://e-vee.vercel.app'),
+
   title: {
     default: 'E-vee',
     template: '%s | E-vee',
   },
+
   description:
-    'E-vee is a RAG-powered shopping assistant chatbot that helps users discover and purchase products.',
+    'E-vee is a RAG-powered shopping assistant that helps you discover, compare, and buy products smarter.',
+
   applicationName: 'E-vee',
+
   keywords: [
-    'Chatbot shopping assistant',
+    'AI shopping assistant',
     'RAG ecommerce',
-    'AI ecommerce',
-    'shopping assistant',
+    'AI product discovery',
+    'shopping chatbot',
     'product recommendations',
   ],
-  authors: [{ name: 'Yusuf' }],
-  creator: 'E-vee',
-  metadataBase: new URL('https://e-vee.vercel.app'),
+
+  authors: [{ name: 'Yusuf Lawal' }],
+  creator: 'Yusuf Lawal',
+  publisher: 'E-vee',
+
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+      'max-video-preview': -1,
+    },
+  },
 
   openGraph: {
+    type: 'website',
+    url: 'https://e-vee.vercel.app',
     title: 'E-vee',
     description:
-      'Shop products smarter with E-vee, a RAG-powered shopping assistant chatbot.',
-    url: 'https://e-vee.vercel.app',
+      'Shop products smarter with E-vee, a RAG-powered shopping assistant.',
     siteName: 'E-vee',
+    locale: 'en_US',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'E-vee',
+        alt: 'E-vee - AI Shopping Assistant',
       },
     ],
-    locale: 'en_US',
-    type: 'website',
   },
 
   twitter: {
     card: 'summary_large_image',
     title: 'E-vee',
     description:
-      'Shop products smarter with E-vee, a RAG-powered shopping assistant chatbot.',
-    images: ['https://e-vee.vercel.app/og-imagex.png'],
+      'Shop products smarter with E-vee, a RAG-powered shopping assistant.',
+    images: ['/og-imagex.png'],
     creator: '@initysl',
     site: '@initysl',
   },
@@ -67,9 +85,8 @@ export const metadata: Metadata = {
     apple: '/apple-touch-icon.png',
   },
 
-  robots: {
-    index: true,
-    follow: true,
+  alternates: {
+    canonical: '/',
   },
 };
 
