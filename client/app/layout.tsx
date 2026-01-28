@@ -75,7 +75,7 @@ export const metadata: Metadata = {
     title: 'E-vee',
     description:
       'Shop products smarter with E-vee, a RAG-powered shopping assistant.',
-    images: ['/og-imagex.png'],
+    images: ['/og-image.png'],
     creator: '@initysl',
     site: '@initysl',
   },
