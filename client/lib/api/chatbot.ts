@@ -33,4 +33,13 @@ export const chatbotApi = {
       throw error;
     }
   },
+
+  clearHistory: async (): Promise<void> => {
+    try {
+      await apiClient.delete('/chatbot/history');
+    } catch (error) {
+      console.error('Error clearing chatbot history:', error);
+      throw error;
+    }
+  },
 };

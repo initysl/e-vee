@@ -21,6 +21,8 @@ async def list_products():
     try:
         products = await get_products()
         return products
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -33,6 +35,8 @@ async def get_product_by_id(product_id: int):
         if not product:
             raise HTTPException(status_code=404, detail=f"Product {product_id} not found")
         return product
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -47,6 +51,8 @@ async def get_products_by_category(category_name: str):
             raise HTTPException(status_code=404, detail=f"No products found in category '{category_name}'")
     
         return filtered_products
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
@@ -64,6 +70,12 @@ async def search_products(query: str):
         if not matched_products:
             raise HTTPException(status_code=404, detail=f"No products matched the query '{query}'")
         
-        return matched_products
+        return {
+            "query": query,
+            "results": matched_products,
+            "count": len(matched_products),
+        }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

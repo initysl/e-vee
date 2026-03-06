@@ -1,6 +1,7 @@
 # Next.js Client
 client/node_modules/
 client/.next/
+client/.next-local/dev/
 client/out/
 client/build/
 client/.env.local

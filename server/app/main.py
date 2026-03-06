@@ -148,7 +148,7 @@ async def health_check():
         # Check Redis connectivity
         from app.services.product_service import get_redis_client
         redis = await get_redis_client()
-        redis_healthy =  redis.ping()
+        redis_healthy = await redis.ping()
         
         return {
             "status": "healthy",

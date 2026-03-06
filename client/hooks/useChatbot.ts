@@ -66,6 +66,7 @@ export const useChatbot = () => {
           timestamp: new Date(),
           intent: response.intent,
           action: action,
+          metadata: response.metadata,
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
@@ -105,10 +106,15 @@ export const useChatbot = () => {
     [refreshCart]
   );
 
-  const clearChat = useCallback(() => {
+  const clearChat = useCallback(async () => {
     setMessages([]);
     setError(null);
     localStorage.removeItem(CHAT_STORAGE_KEY);
+    try {
+      await chatbotApi.clearHistory();
+    } catch (err) {
+      console.error('Failed to clear server chat history:', err);
+    }
   }, []);
 
   const resetError = useCallback(() => {

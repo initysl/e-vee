@@ -1,0 +1,14 @@
+2026-03-06 15:35:50 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=search_products | query=Show me some electronics | sort_hint=relevance
+2026-03-06 15:35:50 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=compare_products | product_ids=2,2,1
+2026-03-06 15:35:50 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=add_to_cart | session_id=session-2 | product_ids=2 | quantity=1
+2026-03-06 15:35:50 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=cart_query | session_id=session-2
+2026-03-06 15:35:50 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=search_products | query=Show me some electronics | sort_hint=relevance
+2026-03-06 15:35:50 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=product_detail | product_id=2
+2026-03-06 15:35:50 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=hub_info | topic=return
+2026-03-06 15:36:17 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=search_products | query=Show me some electronics | sort_hint=relevance
+2026-03-06 15:36:17 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=compare_products | product_ids=2,1
+2026-03-06 15:36:17 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=add_to_cart | session_id=session-2 | product_ids=2 | quantity=1
+2026-03-06 15:36:17 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=cart_query | session_id=session-2
+2026-03-06 15:36:17 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=search_products | query=Show me some electronics | sort_hint=relevance
+2026-03-06 15:36:17 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=product_detail | product_id=2
+2026-03-06 15:36:17 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=hub_info | topic=return

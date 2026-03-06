@@ -105,7 +105,7 @@ export const useProductSearch = () => {
       setLoading(true);
       setError(null);
       const data = await productsApi.search(query);
-      setResults(data.results);
+      setResults(Array.isArray((data as any).results) ? data.results : []);
     } catch (err: any) {
       setError(err?.response?.data?.detail || 'Failed to search products');
       console.error('Error searching products:', err);

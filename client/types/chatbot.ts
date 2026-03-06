@@ -1,12 +1,18 @@
 import { Cart } from './cart';
 import { Product } from './product';
 
+export interface ChatSuggestion {
+  label: string;
+  prompt: string;
+}
+
 export interface ChatMessage {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
   intent?: string;
   action?: string;
+  metadata?: ChatMetadata;
 }
 
 export interface ChatRequest {
@@ -23,12 +29,14 @@ export interface ChatResponse {
 export interface ChatMetadata {
   cart?: Cart;
   product?: Product;
-  results?: any[];
+  products?: Product[];
   checkout_ready?: boolean;
   action?: string;
-  added_products?: any[];
-  removed_products?: any[];
+  suggestions?: ChatSuggestion[];
+  added_products?: Product[];
+  removed_products?: Product[];
   failed_products?: string[];
+  query_used?: string;
   [key: string]: any;
 }
 

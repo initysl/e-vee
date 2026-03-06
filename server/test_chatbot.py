@@ -41,8 +41,9 @@ async def test_chatbot():
             "Hello!",
             "What's your return policy?",
             "Show me some electronics",
-            "Tell me about product 5",
-            "Add product 5 to cart",
+            "Tell me about the first one",
+            "Compare the first and second one",
+            "Add the first one to cart",
             "What's in my cart?",
             "I want to checkout"
         ]

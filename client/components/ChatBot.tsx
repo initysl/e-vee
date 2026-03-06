@@ -1,22 +1,22 @@
 'use client';
 
-import { RiRobot3Line, RiShoppingBag2Line } from 'react-icons/ri';
-import { X, Send, Loader2 } from 'lucide-react';
-import { MdAddShoppingCart } from 'react-icons/md';
-import { GiTakeMyMoney } from 'react-icons/gi';
-import { useState, useRef, useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useChatbot } from '@/hooks/useChatbot';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Loader2, Send, X } from 'lucide-react';
+import { GiTakeMyMoney } from 'react-icons/gi';
+import { MdAddShoppingCart } from 'react-icons/md';
+import { RiRobot3Line, RiShoppingBag2Line } from 'react-icons/ri';
+
 import { Button } from '@/components/ui/button';
+import { useChatbot } from '@/hooks/useChatbot';
 import { ChatMessage } from '@/types/chatbot';
+import { Product } from '@/types/product';
 
 export default function Chatbot() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  const [showTooltip, setShowTooltip] = useState(false);
-
   const [inputMessage, setInputMessage] = useState('');
 
   const { messages, loading, sendMessage, clearChat } = useChatbot();
@@ -24,12 +24,10 @@ export default function Chatbot() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to bottom
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // Focus input when chat opens
   useEffect(() => {
     if (isOpen) {
       inputRef.current?.focus();
@@ -39,22 +37,26 @@ export default function Chatbot() {
   const handleSendMessage = async () => {
     if (!inputMessage.trim() || loading) return;
 
-    const message = inputMessage;
+    const message = inputMessage.trim();
     setInputMessage('');
-
     await sendMessage(message);
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSendMessage();
+  const handlePrompt = async (prompt: string) => {
+    if (!prompt || loading) return;
+    await sendMessage(prompt);
+  };
+
+  const handleKeyPress = (event: React.KeyboardEvent) => {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      void handleSendMessage();
     }
   };
 
-  const handleClearChat = () => {
+  const handleClearChat = async () => {
     if (confirm('Clear chat history?')) {
-      clearChat();
+      await clearChat();
     }
   };
 
@@ -77,8 +79,109 @@ export default function Chatbot() {
     }
   };
 
-  const renderMessage = (msg: ChatMessage, index: number) => {
-    const isUser = msg.role === 'user';
+  const getMessageProducts = (message: ChatMessage): Product[] => {
+    const metadata = message.metadata;
+    if (!metadata) return [];
+
+    if (metadata.products?.length) return metadata.products;
+    if (metadata.product) return [metadata.product];
+    return [];
+  };
+
+  const renderProductCards = (products: Product[]) => {
+    if (products.length === 0) return null;
+
+    return (
+      <div className='space-y-2 pt-1'>
+        {products.map((product) => (
+          <div
+            key={product.id}
+            className='rounded-2xl border border-zinc-200 bg-white px-3 py-3 shadow-sm'
+          >
+            <div className='flex items-start justify-between gap-3'>
+              <div>
+                <p className='text-sm font-semibold text-zinc-900 line-clamp-2'>
+                  {product.title}
+                </p>
+                <p className='text-xs text-zinc-500'>{product.category}</p>
+              </div>
+              <span className='text-sm font-semibold text-zinc-900'>
+                ${product.price.toFixed(2)}
+              </span>
+            </div>
+
+            <p className='mt-2 text-xs leading-relaxed text-zinc-600 line-clamp-3'>
+              {product.description}
+            </p>
+
+            <div className='mt-3 flex flex-wrap gap-2'>
+              <InlineChip
+                label='Details'
+                onClick={() => void handlePrompt(`Tell me about product ${product.id}`)}
+              />
+              <InlineChip
+                label='Add to Cart'
+                onClick={() => void handlePrompt(`Add product ${product.id} to cart`)}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  const renderSuggestions = (message: ChatMessage) => {
+    const suggestions = message.metadata?.suggestions ?? [];
+    if (!suggestions.length) return null;
+
+    return (
+      <div className='flex flex-wrap gap-2 pt-1'>
+        {suggestions.map((suggestion) => (
+          <InlineChip
+            key={`${suggestion.label}-${suggestion.prompt}`}
+            label={suggestion.label}
+            onClick={() => void handlePrompt(suggestion.prompt)}
+          />
+        ))}
+      </div>
+    );
+  };
+
+  const renderActionChips = (message: ChatMessage) => {
+    if (message.role === 'user' || !message.action) return null;
+
+    return (
+      <div className='flex flex-wrap gap-2 pt-1'>
+        {message.action === 'redirect_to_checkout' && (
+          <ActionChip
+            label='Checkout'
+            icon={<GiTakeMyMoney size={14} />}
+            onClick={() => handleAction(message.action)}
+          />
+        )}
+
+        {message.action === 'show_cart_button' && (
+          <ActionChip
+            label='View Cart'
+            icon={<MdAddShoppingCart size={14} />}
+            onClick={() => handleAction(message.action)}
+          />
+        )}
+
+        {message.action === 'browse_products' && (
+          <ActionChip
+            label='Browse Market'
+            icon={<RiShoppingBag2Line size={14} />}
+            onClick={() => handleAction(message.action)}
+          />
+        )}
+      </div>
+    );
+  };
+
+  const renderMessage = (message: ChatMessage, index: number) => {
+    const isUser = message.role === 'user';
+    const products = getMessageProducts(message);
 
     return (
       <motion.div
@@ -88,8 +191,7 @@ export default function Chatbot() {
         transition={{ duration: 0.25, ease: 'easeOut' }}
         className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}
       >
-        <div className='max-w-[78%] space-y-2'>
-          {/* Message Bubble */}
+        <div className='max-w-[84%] space-y-2'>
           <div
             className={`px-4 py-3 rounded-2xl text-sm leading-relaxed ${
               isUser
@@ -97,44 +199,19 @@ export default function Chatbot() {
                 : 'bg-white text-zinc-800 border border-zinc-200 rounded-bl-md shadow-sm'
             }`}
           >
-            <p className='whitespace-pre-wrap'>{msg.content}</p>
+            <p className='whitespace-pre-wrap'>{message.content}</p>
 
             <div className='mt-1 text-[10px] text-zinc-400'>
-              {msg.timestamp.toLocaleTimeString([], {
+              {message.timestamp.toLocaleTimeString([], {
                 hour: '2-digit',
                 minute: '2-digit',
               })}
             </div>
           </div>
 
-          {/* Quick Action Chips */}
-          {!isUser && msg.action && (
-            <div className='flex flex-wrap gap-2 pt-1'>
-              {msg.action === 'redirect_to_checkout' && (
-                <ActionChip
-                  label='Checkout'
-                  icon={<GiTakeMyMoney size={14} />}
-                  onClick={() => handleAction(msg.action)}
-                />
-              )}
-
-              {msg.action === 'show_cart_button' && (
-                <ActionChip
-                  label='View Cart'
-                  icon={<MdAddShoppingCart size={14} />}
-                  onClick={() => handleAction(msg.action)}
-                />
-              )}
-
-              {msg.action === 'browse_products' && (
-                <ActionChip
-                  label='Browse Market'
-                  icon={<RiShoppingBag2Line size={14} />}
-                  onClick={() => handleAction(msg.action)}
-                />
-              )}
-            </div>
-          )}
+          {!isUser && renderProductCards(products)}
+          {!isUser && renderActionChips(message)}
+          {!isUser && renderSuggestions(message)}
         </div>
       </motion.div>
     );
@@ -142,7 +219,6 @@ export default function Chatbot() {
 
   return (
     <>
-      {/* Floating Button */}
       <motion.button
         onClick={() => setIsOpen(!isOpen)}
         onMouseEnter={() => setIsHovered(true)}
@@ -164,7 +240,7 @@ export default function Chatbot() {
           }}
         />
 
-        <div className='relative w-14 h-14 bg-linear-to-b from-blue-600 to-zinc-700 opacity-60 rounded-full  flex items-center justify-center'>
+        <div className='relative flex h-14 w-14 items-center justify-center rounded-full bg-linear-to-b from-blue-600 to-zinc-700 opacity-60'>
           <AnimatePresence mode='wait'>
             {!isOpen ? (
               <motion.div
@@ -191,7 +267,7 @@ export default function Chatbot() {
 
           {!isOpen && (
             <motion.span
-              className='absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border-2 border-white'
+              className='absolute -top-1 -right-1 h-3 w-3 rounded-full border-2 border-white bg-red-500'
               animate={{ scale: [1, 1.2, 1] }}
               transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
             />
@@ -204,16 +280,15 @@ export default function Chatbot() {
               initial={{ opacity: 0, x: 10 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 10 }}
-              className='absolute right-16 top-1/2 -translate-y-1/2 bg-zinc-700 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap hidden md:block'
+              className='absolute right-16 top-1/2 hidden -translate-y-1/2 whitespace-nowrap rounded-lg bg-zinc-700 px-3 py-2 text-sm text-white md:block'
             >
               Chat with E-vee
-              <div className='absolute right-0 top-1/2 -translate-y-1/2 translate-x-1/2 rotate-45 w-2 h-2 bg-zinc-800' />
+              <div className='absolute right-0 top-1/2 h-2 w-2 -translate-y-1/2 translate-x-1/2 rotate-45 bg-zinc-800' />
             </motion.div>
           )}
         </AnimatePresence>
       </motion.button>
 
-      {/* Chatbot Panel */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -221,20 +296,19 @@ export default function Chatbot() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className='fixed bottom-24 right-6 w-82 sm:w-96 h-110 bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden z-50 flex flex-col'
+            className='fixed bottom-24 right-6 z-50 flex h-110 w-82 flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-2xl sm:w-96'
           >
-            {/* Header */}
-            <div className='bg-linear-to-r from-blue-600 to-blue-700 p-4 text-white shrink-0'>
+            <div className='shrink-0 bg-linear-to-r from-blue-600 to-blue-700 p-4 text-white'>
               <div className='flex items-center gap-3'>
-                <div className='w-10 h-10 bg-white/20 rounded-full flex items-center justify-center'>
+                <div className='flex h-10 w-10 items-center justify-center rounded-full bg-white/20'>
                   <RiRobot3Line size={24} />
                 </div>
                 <div className='flex-1'>
-                  <h3 className='font-semibold text-base'>E-vee</h3>
-                  <p className='text-xs text-white/80'>Always here to help</p>
+                  <h3 className='text-base font-semibold'>E-vee</h3>
+                  <p className='text-xs text-white/80'>Session-aware shopping help</p>
                 </div>
                 <button
-                  onClick={handleClearChat}
+                  onClick={() => void handleClearChat()}
                   className='text-xs text-white/80 hover:text-white'
                 >
                   Clear
@@ -242,32 +316,29 @@ export default function Chatbot() {
               </div>
             </div>
 
-            {/* Chat Messages */}
-            <div className='flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50'>
+            <div className='flex-1 space-y-4 overflow-y-auto bg-gray-50 p-4'>
               {messages.length === 0 && (
                 <div className='flex justify-start'>
-                  <div className='bg-white rounded-2xl px-4 py-2 shadow-sm border border-gray-200'>
+                  <div className='rounded-2xl border border-gray-200 bg-white px-4 py-2 shadow-sm'>
                     <p className='text-sm text-gray-800'>
-                      Hi! I'm E-vee, your shopping assistant. How can I help you
-                      today?
+                      Hi. Ask me for products, comparisons, cart help, or checkout guidance.
                     </p>
                   </div>
                 </div>
               )}
 
-              {messages.map((msg, index) => renderMessage(msg, index))}
+              {messages.map((message, index) => renderMessage(message, index))}
 
-              {/* Typing Indicator */}
               {loading && (
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className='flex justify-start'
                 >
-                  <div className='bg-white border border-zinc-200 rounded-2xl px-4 py-2 shadow-sm'>
+                  <div className='rounded-2xl border border-zinc-200 bg-white px-4 py-2 shadow-sm'>
                     <div className='flex items-center gap-2 text-xs text-zinc-400'>
-                      <span className='w-2 h-2 bg-zinc-400 rounded-full animate-pulse' />
-                      <span>E-vee is thinking…</span>
+                      <span className='h-2 w-2 animate-pulse rounded-full bg-zinc-400' />
+                      <span>E-vee is thinking...</span>
                     </div>
                   </div>
                 </motion.div>
@@ -276,25 +347,24 @@ export default function Chatbot() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Area */}
-            <div className='p-3 bg-white border-t shrink-0'>
+            <div className='shrink-0 border-t bg-white p-3'>
               <div className='flex gap-2'>
                 <input
                   ref={inputRef}
                   type='text'
                   value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
+                  onChange={(event) => setInputMessage(event.target.value)}
                   onKeyDown={handleKeyPress}
-                  placeholder='Type your message...'
+                  placeholder='Ask for products, comparisons, or cart help...'
                   disabled={loading}
-                  maxLength={50}
-                  className='flex-1 px-4 py-2 border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100 text-sm'
+                  maxLength={240}
+                  className='flex-1 rounded-full border border-gray-300 px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-600 disabled:bg-gray-100'
                 />
                 <Button
-                  onClick={handleSendMessage}
+                  onClick={() => void handleSendMessage()}
                   disabled={!inputMessage.trim() || loading}
                   size='icon'
-                  className='rounded-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shrink-0'
+                  className='shrink-0 rounded-full bg-linear-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800'
                 >
                   {loading ? (
                     <Loader2 className='h-4 w-4 animate-spin' />
@@ -309,25 +379,38 @@ export default function Chatbot() {
       </AnimatePresence>
     </>
   );
-  type ActionChipProps = {
-    label: string;
-    icon?: React.ReactNode;
-    onClick: () => void;
-  };
+}
 
-  function ActionChip({ label, icon, onClick }: ActionChipProps) {
-    return (
-      <button
-        onClick={onClick}
-        className='flex items-center gap-1.5 px-3 py-1.5
-                 rounded-full border border-zinc-300
-                 bg-white text-zinc-700 text-xs
-                 hover:bg-zinc-100 hover:border-zinc-400
-                 transition shadow-sm'
-      >
-        {icon}
-        {label}
-      </button>
-    );
-  }
+type ActionChipProps = {
+  label: string;
+  icon?: React.ReactNode;
+  onClick: () => void;
+};
+
+function ActionChip({ label, icon, onClick }: ActionChipProps) {
+  return (
+    <button
+      onClick={onClick}
+      className='flex items-center gap-1.5 rounded-full border border-zinc-300 bg-white px-3 py-1.5 text-xs text-zinc-700 shadow-sm transition hover:border-zinc-400 hover:bg-zinc-100'
+    >
+      {icon}
+      {label}
+    </button>
+  );
+}
+
+type InlineChipProps = {
+  label: string;
+  onClick: () => void;
+};
+
+function InlineChip({ label, onClick }: InlineChipProps) {
+  return (
+    <button
+      onClick={onClick}
+      className='rounded-full border border-zinc-200 bg-zinc-50 px-3 py-1.5 text-xs text-zinc-700 transition hover:border-zinc-300 hover:bg-white'
+    >
+      {label}
+    </button>
+  );
 }
