@@ -28,3 +28,35 @@
 2026-03-06 16:13:22 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=hub_info | topic=return
 2026-03-06 16:13:22 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=add_and_checkout | tools=add_to_cart,checkout_readiness
 2026-03-06 16:13:22 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=unknown | tools=none
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=product_search | tools=search_products
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=search_products | query=Show me some electronics | sort_hint=relevance
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=compare_products | tools=compare_products
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=compare_products | product_ids=2,1
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=add_to_cart | tools=add_to_cart
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=add_to_cart | session_id=session-2 | product_ids=2 | quantity=1
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=cart_query | tools=cart_query
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=cart_query | session_id=session-2
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=product_search | tools=search_products
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=search_products | query=Show me some electronics | sort_hint=relevance
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=product_detail | tools=product_detail
+2026-03-06 16:29:26 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=product_detail | product_id=2
+2026-03-06 16:29:27 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=hub_info | tools=hub_info
+2026-03-06 16:29:27 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=hub_info | topic=return
+2026-03-06 16:29:27 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=add_and_checkout | tools=add_to_cart,checkout_readiness
+2026-03-06 16:29:27 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=unknown | tools=none
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=product_search | tools=search_products
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=search_products | query=Show me some electronics | sort_hint=relevance
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=compare_products | tools=compare_products
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=compare_products | product_ids=2,1
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=add_to_cart | tools=add_to_cart
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=add_to_cart | session_id=session-2 | product_ids=2 | quantity=1
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=cart_query | tools=cart_query
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=cart_query | session_id=session-2
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=product_search | tools=search_products
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=search_products | query=Show me some electronics | sort_hint=relevance
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=product_detail | tools=product_detail
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=product_detail | product_id=2
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=hub_info | tools=hub_info
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Running chatbot tool | tool=hub_info | topic=return
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=add_and_checkout | tools=add_to_cart,checkout_readiness
+2026-03-06 16:29:40 - app - INFO - [logging_config.py:100] - Selected chatbot tool plan | intent=unknown | tools=none

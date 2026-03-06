@@ -20,3 +20,17 @@
 2026-03-06 16:13:21 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:search_products | Duration: 0.013s | count=2
 2026-03-06 16:13:21 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:product_detail | Duration: 0.005s | product_id=2 | found=True
 2026-03-06 16:13:22 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:hub_info | Duration: 0.001s | topic=return | found=True
+2026-03-06 16:29:26 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:search_products | Duration: 0.020s | count=2
+2026-03-06 16:29:26 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:compare_products | Duration: 0.004s | compared=2
+2026-03-06 16:29:26 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:add_to_cart | Duration: 0.008s | session_id=session-2 | added=1 | failed=0
+2026-03-06 16:29:26 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:cart_query | Duration: 0.024s | session_id=session-2 | item_count=1
+2026-03-06 16:29:26 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:search_products | Duration: 0.003s | count=2
+2026-03-06 16:29:26 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:product_detail | Duration: 0.013s | product_id=2 | found=True
+2026-03-06 16:29:27 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:hub_info | Duration: 0.019s | topic=return | found=True
+2026-03-06 16:29:40 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:search_products | Duration: 0.006s | count=2
+2026-03-06 16:29:40 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:compare_products | Duration: 0.001s | compared=2
+2026-03-06 16:29:40 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:add_to_cart | Duration: 0.004s | session_id=session-2 | added=1 | failed=0
+2026-03-06 16:29:40 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:cart_query | Duration: 0.005s | session_id=session-2 | item_count=1
+2026-03-06 16:29:40 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:search_products | Duration: 0.006s | count=2
+2026-03-06 16:29:40 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:product_detail | Duration: 0.008s | product_id=2 | found=True
+2026-03-06 16:29:40 - performance - INFO - [logging_config.py:77] - Operation: chatbot_tool:hub_info | Duration: 0.004s | topic=return | found=True
