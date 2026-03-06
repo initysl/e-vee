@@ -4,6 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from app.embeddings.chroma_client import get_chroma_client
 from app.services.chat_session_service import get_chat_session, save_chat_session
+from app.services.chatbot_selector import ChatToolSelector, ToolCall, ToolPlan
 from app.services.chatbot_tools import (
     add_to_cart_tool,
     cart_query_tool,
@@ -88,11 +89,13 @@ class ChatbotService:
 
     def __init__(self):
         self.collection = get_chroma_client()
+        self.selector = ChatToolSelector()
 
     async def process_message(self, message: str, session_id: str) -> Dict[str, Any]:
         session = await get_chat_session(session_id)
         request = self._parse_request(message, session)
-        result = await self._dispatch(request, session_id, session)
+        plan = self.selector.select(request)
+        result = await self._dispatch(plan, request, session_id, session)
         await self._persist_session(session, message, result, request)
         return result
 
@@ -202,71 +205,95 @@ class ChatbotService:
 
     async def _dispatch(
         self,
+        plan: ToolPlan,
         request: ParsedRequest,
         session_id: str,
         session: Dict[str, Any],
     ) -> Dict[str, Any]:
-        if request.intent == "greeting":
+        if plan.static_response is not None:
             return {
-                "response": "Hi, I'm E-vee. I can search products, compare options, manage your cart, and help you checkout.",
-                "intent": "greeting",
-                "suggestions": self._build_suggestions(
-                    ("Browse products", "Show me popular products"),
-                    ("View cart", "What's in my cart?"),
-                ),
+                **plan.static_response,
+                "suggestions": self._default_suggestions_for_intent(plan.intent),
             }
 
-        if request.intent == "cart_query":
-            return await self._handle_cart_query(session_id)
+        tool_results = [
+            await self._execute_tool_call(tool_call, session_id, session)
+            for tool_call in plan.tool_calls
+        ]
 
-        if request.intent == "clear_cart":
-            return await self._handle_clear_cart(session_id)
+        if plan.intent == "cart_query":
+            return self._build_cart_query_response(tool_results[0])
 
-        if request.intent == "remove_from_cart":
-            return await self._handle_remove_from_cart(session_id, request.product_ids)
+        if plan.intent == "clear_cart":
+            return self._build_clear_cart_response(tool_results[0], tool_results[1])
 
-        if request.intent == "add_and_checkout":
-            add_result = await self._handle_add_to_cart(session_id, request.product_ids, request.quantity)
-            if add_result.get("cart", {}).get("item_count", 0) == 0:
-                return add_result
-            add_result["action"] = "redirect_to_checkout"
-            add_result["checkout_ready"] = True
-            add_result["suggestions"] = self._build_suggestions(
-                ("Go to checkout", "Checkout"),
-                ("Review cart", "What's in my cart?"),
-            )
-            return add_result
+        if plan.intent == "remove_from_cart":
+            return self._build_remove_from_cart_response(tool_results[0])
 
-        if request.intent == "checkout":
-            return await self._handle_checkout(session_id)
+        if plan.intent == "add_to_cart":
+            return self._build_add_to_cart_response(tool_results[0], request.quantity)
 
-        if request.intent == "hub_info":
-            return await self._handle_hub_info(request.topic or "support")
+        if plan.intent == "add_and_checkout":
+            return self._build_add_and_checkout_response(tool_results[0], tool_results[1], request.quantity)
 
-        if request.intent == "compare_products":
-            return await self._handle_compare_products(request.product_ids)
+        if plan.intent == "checkout":
+            return self._build_checkout_response(tool_results[0])
 
-        if request.intent == "product_detail":
+        if plan.intent == "product_detail":
             product_id = request.product_ids[0] if request.product_ids else None
-            return await self._handle_product_detail(product_id)
+            return self._build_product_detail_response(tool_results[0], product_id)
 
-        if request.intent == "add_to_cart":
-            return await self._handle_add_to_cart(session_id, request.product_ids, request.quantity)
+        if plan.intent == "compare_products":
+            return self._build_compare_products_response(tool_results[0])
 
-        if request.intent == "product_search":
-            return await self._handle_product_search(request.query or "", request.sort_hint, session)
+        if plan.intent == "hub_info":
+            return self._build_hub_info_response(tool_results[0], request.topic or "support")
+
+        if plan.intent == "product_search":
+            return self._build_product_search_response(tool_results[0], request.query or "")
 
         return {
-            "response": (
-                "I can help with product discovery, product details, cart actions, and checkout. "
-                "Try asking for electronics, asking about a product, or checking your cart."
-            ),
+            "response": "I could not map that request to a supported tool flow.",
             "intent": "unknown",
-            "suggestions": self._build_suggestions(
-                ("Find electronics", "Show me some electronics"),
-                ("View cart", "What's in my cart?"),
-            ),
+            "suggestions": self._default_suggestions_for_intent("unknown"),
         }
+
+    async def _execute_tool_call(
+        self,
+        tool_call: ToolCall,
+        session_id: str,
+        session: Dict[str, Any],
+    ) -> Any:
+        if tool_call.name == "cart_query":
+            return await cart_query_tool(session_id)
+        if tool_call.name == "clear_cart":
+            return await clear_cart_tool(session_id)
+        if tool_call.name == "remove_from_cart":
+            return await remove_from_cart_tool(session_id, tool_call.kwargs["product_ids"])
+        if tool_call.name == "add_to_cart":
+            return await add_to_cart_tool(
+                session_id,
+                tool_call.kwargs["product_ids"],
+                tool_call.kwargs["quantity"],
+            )
+        if tool_call.name == "checkout_readiness":
+            return await checkout_readiness_tool(session_id)
+        if tool_call.name == "product_detail":
+            return await product_detail_tool(tool_call.kwargs.get("product_id"))
+        if tool_call.name == "compare_products":
+            return await compare_products_tool(tool_call.kwargs["product_ids"])
+        if tool_call.name == "hub_info":
+            return await hub_info_tool(self.collection, tool_call.kwargs["topic"])
+        if tool_call.name == "search_products":
+            return await search_products_tool(
+                self.collection,
+                tool_call.kwargs["query"],
+                tool_call.kwargs["sort_hint"],
+                session,
+                self.CATEGORY_SYNONYMS,
+                self.STOP_WORDS,
+            )
+        raise ValueError(f"Unknown tool call: {tool_call.name}")
 
     async def _persist_session(
         self,
@@ -301,6 +328,313 @@ class ChatbotService:
             session["last_results"] = session.get("last_results", [])
 
         await save_chat_session(session["session_id"], session)
+
+    def _default_suggestions_for_intent(self, intent: str) -> List[Dict[str, str]]:
+        if intent == "greeting":
+            return self._build_suggestions(
+                ("Browse products", "Show me popular products"),
+                ("View cart", "What's in my cart?"),
+            )
+        if intent == "unknown":
+            return self._build_suggestions(
+                ("Find electronics", "Show me some electronics"),
+                ("View cart", "What's in my cart?"),
+            )
+        return []
+
+    def _build_cart_query_response(self, cart: Dict[str, Any]) -> Dict[str, Any]:
+        if cart["item_count"] == 0:
+            return {
+                "response": "Your cart is empty. I can help you find products to add.",
+                "intent": "cart_query",
+                "cart": cart,
+                "action": "browse_products",
+                "suggestions": self._build_suggestions(
+                    ("Browse market", "Show me popular products"),
+                    ("Find electronics", "Show me some electronics"),
+                ),
+            }
+
+        items_list = "\n".join(
+            [
+                f"- {item['title']} x{item['quantity']} (${item['subtotal']:.2f})"
+                for item in cart["items"]
+            ]
+        )
+        return {
+            "response": (
+                f"Here's your cart:\n\n{items_list}\n\n"
+                f"Total items: {cart['item_count']}\n"
+                f"Subtotal: ${cart['total']:.2f}"
+            ),
+            "intent": "cart_query",
+            "cart": cart,
+            "action": "show_checkout_button",
+            "suggestions": self._build_suggestions(
+                ("Proceed to checkout", "Checkout"),
+                ("Remove an item", "Remove product 1 from cart"),
+            ),
+        }
+
+    def _build_clear_cart_response(
+        self,
+        previous_cart: Dict[str, Any],
+        updated_cart: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        if previous_cart["item_count"] == 0:
+            return {
+                "response": "Your cart is already empty.",
+                "intent": "clear_cart",
+                "cart": previous_cart,
+            }
+
+        return {
+            "response": "I cleared your cart.",
+            "intent": "clear_cart",
+            "cart": updated_cart,
+            "action": "browse_products",
+            "suggestions": self._build_suggestions(
+                ("Browse market", "Show me popular products"),
+            ),
+        }
+
+    def _build_remove_from_cart_response(self, tool_result: Dict[str, Any]) -> Dict[str, Any]:
+        removed_products = tool_result["products"]
+        failed_products = tool_result["failed_products"]
+        cart = tool_result["cart"]
+
+        if not removed_products:
+            return {
+                "response": "I couldn't remove those items. They may not be in your cart.",
+                "intent": "remove_from_cart",
+                "cart": cart,
+            }
+
+        removed_names = ", ".join(product["title"] for product in removed_products)
+        response = f"Removed {removed_names} from your cart."
+        if failed_products:
+            response += f" I couldn't remove: {', '.join(failed_products)}."
+
+        return {
+            "response": response,
+            "intent": "remove_from_cart",
+            "cart": cart,
+            "products": removed_products,
+            "suggestions": self._build_suggestions(
+                ("View cart", "What's in my cart?"),
+                ("Checkout", "Checkout"),
+            ),
+        }
+
+    def _build_add_to_cart_response(
+        self,
+        tool_result: Dict[str, Any],
+        quantity: int,
+    ) -> Dict[str, Any]:
+        added_products = tool_result["products"]
+        failed_products = tool_result["failed_products"]
+        cart = tool_result["cart"]
+        if not added_products:
+            return {
+                "response": "I couldn't add those items to your cart.",
+                "intent": "add_to_cart",
+                "cart": cart,
+            }
+
+        titles = ", ".join(product["title"] for product in added_products)
+        response = (
+            f"Added {titles} to your cart"
+            f"{f' (x{quantity})' if quantity > 1 else ''}.\n\n"
+            f"Cart now has {cart['item_count']} items totaling ${cart['total']:.2f}."
+        )
+        if failed_products:
+            response += f"\nI couldn't find: {', '.join(failed_products)}."
+
+        return {
+            "response": response,
+            "intent": "add_to_cart",
+            "cart": cart,
+            "products": added_products,
+            "action": "show_cart_button",
+            "suggestions": self._build_suggestions(
+                ("View cart", "What's in my cart?"),
+                ("Checkout", "Checkout"),
+            ),
+        }
+
+    def _build_add_and_checkout_response(
+        self,
+        add_result: Dict[str, Any],
+        checkout_cart: Dict[str, Any],
+        quantity: int,
+    ) -> Dict[str, Any]:
+        response = self._build_add_to_cart_response(add_result, quantity)
+        if response.get("intent") != "add_to_cart":
+            return response
+
+        if checkout_cart["item_count"] == 0:
+            return response
+
+        response["intent"] = "add_and_checkout"
+        response["action"] = "redirect_to_checkout"
+        response["checkout_ready"] = True
+        response["cart"] = checkout_cart
+        response["suggestions"] = self._build_suggestions(
+            ("Go to checkout", "Checkout"),
+            ("Review cart", "What's in my cart?"),
+        )
+        return response
+
+    def _build_checkout_response(self, cart: Dict[str, Any]) -> Dict[str, Any]:
+        if cart["item_count"] == 0:
+            return {
+                "response": "Your cart is empty. Add something before checking out.",
+                "intent": "checkout",
+                "cart": cart,
+                "action": "browse_products",
+                "suggestions": self._build_suggestions(
+                    ("Browse market", "Show me some electronics"),
+                ),
+            }
+
+        return {
+            "response": (
+                f"You're ready to checkout.\n\n"
+                f"Items: {cart['item_count']}\n"
+                f"Subtotal: ${cart['total']:.2f}\n\n"
+                f"Open checkout when you're ready."
+            ),
+            "intent": "checkout",
+            "cart": cart,
+            "checkout_ready": True,
+            "action": "redirect_to_checkout",
+            "suggestions": self._build_suggestions(
+                ("Go to checkout", "Checkout"),
+                ("Review cart", "What's in my cart?"),
+            ),
+        }
+
+    def _build_product_detail_response(
+        self,
+        product: Optional[Dict[str, Any]],
+        product_id: Optional[str],
+    ) -> Dict[str, Any]:
+        if not product_id or not product:
+            return {
+                "response": "Tell me which product you want details about."
+                if not product_id
+                else f"I couldn't find product {product_id}.",
+                "intent": "product_detail",
+            }
+
+        rating = product.get("rating") or {}
+        rating_line = ""
+        if rating:
+            rating_line = f"\nRating: {rating.get('rate', 'N/A')} ({rating.get('count', 0)} reviews)"
+
+        return {
+            "response": (
+                f"{product['title']}\n"
+                f"Price: ${float(product['price']):.2f}\n"
+                f"Category: {product['category']}"
+                f"{rating_line}\n\n"
+                f"{product['description']}"
+            ),
+            "intent": "product_detail",
+            "product": product,
+            "products": [product],
+            "suggestions": self._build_suggestions(
+                ("Add to cart", f"Add product {product_id} to cart"),
+                ("Show similar", f"Show me more {product['category']} like this"),
+            ),
+        }
+
+    def _build_compare_products_response(self, compared_products: List[Dict[str, Any]]) -> Dict[str, Any]:
+        if len(compared_products) < 2:
+            return {
+                "response": "I need two products to compare. Try: 'Compare the first and second one'.",
+                "intent": "compare_products",
+            }
+
+        first, second = compared_products[:2]
+        first_rating = first.get("rating", {}).get("rate", "N/A")
+        second_rating = second.get("rating", {}).get("rate", "N/A")
+        preferred_product_id = first["id"] if float(first["price"]) <= float(second["price"]) else second["id"]
+
+        return {
+            "response": (
+                f"Comparison:\n\n"
+                f"{first['title']}\n"
+                f"- Price: ${float(first['price']):.2f}\n"
+                f"- Category: {first['category']}\n"
+                f"- Rating: {first_rating}\n\n"
+                f"{second['title']}\n"
+                f"- Price: ${float(second['price']):.2f}\n"
+                f"- Category: {second['category']}\n"
+                f"- Rating: {second_rating}\n\n"
+                f"The cheaper option is {'the first' if preferred_product_id == first['id'] else 'the second'} item."
+            ),
+            "intent": "compare_products",
+            "products": [first, second],
+            "preferred_product_id": preferred_product_id,
+            "suggestions": self._build_suggestions(
+                ("Add the cheaper one", f"Add product {preferred_product_id} to cart"),
+                ("Show me cheaper options", "Show me cheaper options"),
+            ),
+        }
+
+    def _build_hub_info_response(
+        self,
+        metadata: Optional[Dict[str, str]],
+        topic: str,
+    ) -> Dict[str, Any]:
+        if metadata:
+            return {
+                "response": f"{metadata['title']}\n\n{metadata['answer']}",
+                "intent": "hub_info",
+                "topic": topic,
+            }
+
+        return {
+            "response": f"I couldn't find information about {topic}. Try shipping, returns, refunds, contact, or support.",
+            "intent": "hub_info",
+            "topic": topic,
+        }
+
+    def _build_product_search_response(
+        self,
+        products: List[Dict[str, Any]],
+        query: str,
+    ) -> Dict[str, Any]:
+        if not products:
+            return {
+                "response": "I couldn't find relevant products. Try a category like electronics or a specific product type.",
+                "intent": "product_search",
+                "suggestions": self._build_suggestions(
+                    ("Show electronics", "Show me some electronics"),
+                    ("Show jewelry", "Show me some jewelry"),
+                ),
+            }
+
+        response_lines = ["Here are the best matches I found:"]
+        for index, product in enumerate(products, start=1):
+            response_lines.append(
+                f"{index}. {product['title']} - ${product['price']:.2f} ({product['category']})"
+            )
+        response_lines.append(
+            "\nYou can say 'tell me about the first one', 'compare the first and second', or 'add product 3 to cart'."
+        )
+
+        return {
+            "response": "\n".join(response_lines),
+            "intent": "product_search",
+            "products": products,
+            "query_used": query,
+            "suggestions": self._build_suggestions(
+                ("First product details", "Tell me about the first one"),
+                ("Cheaper options", "Show me cheaper options"),
+            ),
+        }
 
     async def _handle_cart_query(self, session_id: str) -> Dict[str, Any]:
         cart = await cart_query_tool(session_id)
